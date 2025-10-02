@@ -19,7 +19,7 @@ export type SearchByPartialAddressParams = {
 };
 declare class QuickRouteAddressLookup {
     protected options?: QuickRouteAddressLookupOptions | undefined;
-    protected cache: QuickRouteCacheI;
+    protected cache?: QuickRouteCacheI;
     protected logger: QuickRouteLoggerI;
     protected provider: QuickRouteProviderI;
     constructor(options?: QuickRouteAddressLookupOptions | undefined);

@@ -28,17 +28,21 @@ class QuickRouteProviderTomTom {
                 };
                 return location_tomtom_model_1.default.parse(mapped);
             });
-            return results;
+            // we could trust the order from the provider, but let's be sure
+            // assumption: higher score is better so lets show those first
+            const ordered = results.sort((a, b) => { var _a, _b; return (((_a = b.provider) === null || _a === void 0 ? void 0 : _a.score) || 0) - (((_b = a.provider) === null || _b === void 0 ? void 0 : _b.score) || 0); });
+            return ordered;
         });
     }
     expandAddress(location) {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
         return {
-            label: (_a = location.address) === null || _a === void 0 ? void 0 : _a.freeformAddress,
+            display: (_a = location.address) === null || _a === void 0 ? void 0 : _a.freeformAddress,
             street: {
                 number: (_b = location.address) === null || _b === void 0 ? void 0 : _b.streetNumber,
                 name: (_c = location.address) === null || _c === void 0 ? void 0 : _c.streetName,
-                type: undefined,
+                // not sure about this one
+                type: location.type,
             },
             suburb: (_d = location.address) === null || _d === void 0 ? void 0 : _d.municipalitySubdivision,
             city: (_e = location.address) === null || _e === void 0 ? void 0 : _e.municipality,

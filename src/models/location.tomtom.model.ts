@@ -2,6 +2,7 @@ import z from "zod";
 import LocationModel from "./location.model";
 
 const LocationTomTomModel = LocationModel.extend({
+  // tomtom specific vendor information
   provider: z
     .object({
       type: z.literal("TomTom"),

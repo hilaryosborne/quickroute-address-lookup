@@ -1,5 +1,6 @@
 import QuickRouteProviderI from "./provider.interface";
 import { ProviderTomTomSearchResponseResult } from "./provider.tomtom.response.type";
+import { LocationTomTomModelType } from "../models/location.tomtom.model";
 import { SearchByPartialAddressParams } from "../address.lookup";
 type QuickRouteProviderTomTomOptions = {
     apiKey: string;
@@ -10,45 +11,10 @@ type QuickRouteProviderTomTomOptions = {
 };
 declare class QuickRouteProviderTomTom implements QuickRouteProviderI {
     constructor(options?: QuickRouteProviderTomTomOptions);
-    searchByPartialAddress(params: SearchByPartialAddressParams): Promise<any[]>;
-    protected expandAddress(location: ProviderTomTomSearchResponseResult): {
-        label: string | undefined;
-        street: {
-            number: string | undefined;
-            name: string | undefined;
-            type: undefined;
-        };
-        suburb: string | undefined;
-        city: string | undefined;
-        state: {
-            name: string | undefined;
-            code: string | undefined;
-        };
-        postcode: string | undefined;
-        country: {
-            name: string | undefined;
-            code: string | undefined;
-        };
-    };
-    protected expandGeo(location: ProviderTomTomSearchResponseResult): {
-        lat: number;
-        lng: number;
-    };
-    protected expandProvider(location: ProviderTomTomSearchResponseResult): {
-        type: "TomTom";
-        id: string;
-        score: number;
-        viewport: {
-            topLeftPoint: {
-                lat: number;
-                lng: number;
-            };
-            btmRightPoint: {
-                lat: number;
-                lng: number;
-            };
-        } | undefined;
-    };
+    searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationTomTomModelType[]>;
+    protected expandAddress(location: ProviderTomTomSearchResponseResult): LocationTomTomModelType["address"];
+    protected expandGeo(location: ProviderTomTomSearchResponseResult): LocationTomTomModelType["geo"];
+    protected expandProvider(location: ProviderTomTomSearchResponseResult): LocationTomTomModelType["provider"];
 }
 export default QuickRouteProviderTomTom;
 //# sourceMappingURL=provider.tomtom.d.ts.map

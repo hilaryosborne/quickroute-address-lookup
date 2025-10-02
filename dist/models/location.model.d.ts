@@ -1,7 +1,7 @@
 import z from "zod";
 declare const LocationModel: z.ZodObject<{
     address: z.ZodOptional<z.ZodObject<{
-        label: z.ZodOptional<z.ZodString>;
+        display: z.ZodOptional<z.ZodString>;
         street: z.ZodOptional<z.ZodObject<{
             number: z.ZodOptional<z.ZodString>;
             name: z.ZodOptional<z.ZodString>;

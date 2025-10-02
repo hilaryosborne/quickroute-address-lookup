@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const zod_1 = __importDefault(require("zod"));
 const location_model_1 = __importDefault(require("./location.model"));
 const LocationTomTomModel = location_model_1.default.extend({
+    // tomtom specific vendor information
     provider: zod_1.default
         .object({
         type: zod_1.default.literal("TomTom"),

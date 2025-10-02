@@ -39,7 +39,7 @@ const zod_1 = __importStar(require("zod"));
 // the goal is to provide a consistent model while allowing for provider specific data to be included
 const LocationModel = (0, zod_1.object)({
     address: (0, zod_1.object)({
-        label: zod_1.default.string().optional(),
+        display: zod_1.default.string().optional(),
         street: (0, zod_1.object)({
             number: zod_1.default.string().optional(),
             name: zod_1.default.string().optional(),

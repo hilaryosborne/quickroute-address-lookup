@@ -11,7 +11,7 @@ type QuickRouteProviderTomTomOptions = {
 
 class QuickRouteProviderTomTom implements QuickRouteProviderI {
   constructor(options?: QuickRouteProviderTomTomOptions) {}
-  public async searchByPartialAddress(params: SearchByPartialAddressParams): Promise<any[]> {
+  public async searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationTomTomModelType[]> {
     const response = stub as QuickRouteProviderTomTomResponse;
     const results = response.results.map<LocationTomTomModelType>((result) => {
       const mapped: LocationTomTomModelType = {
@@ -21,16 +21,20 @@ class QuickRouteProviderTomTom implements QuickRouteProviderI {
       };
       return LocationTomTomModel.parse(mapped);
     });
-    return results;
+    // we could trust the order from the provider, but let's be sure
+    // assumption: higher score is better so lets show those first
+    const ordered = results.sort((a, b) => (b.provider?.score || 0) - (a.provider?.score || 0));
+    return ordered;
   }
 
-  protected expandAddress(location: ProviderTomTomSearchResponseResult) {
+  protected expandAddress(location: ProviderTomTomSearchResponseResult): LocationTomTomModelType["address"] {
     return {
-      label: location.address?.freeformAddress,
+      display: location.address?.freeformAddress,
       street: {
         number: location.address?.streetNumber,
         name: location.address?.streetName,
-        type: undefined,
+        // not sure about this one
+        type: location.type,
       },
       suburb: location.address?.municipalitySubdivision,
       city: location.address?.municipality,
@@ -46,14 +50,14 @@ class QuickRouteProviderTomTom implements QuickRouteProviderI {
     };
   }
 
-  protected expandGeo(location: ProviderTomTomSearchResponseResult) {
+  protected expandGeo(location: ProviderTomTomSearchResponseResult): LocationTomTomModelType["geo"] {
     return {
       lat: location.position?.lat,
       lng: location.position?.lon,
     };
   }
 
-  protected expandProvider(location: ProviderTomTomSearchResponseResult) {
+  protected expandProvider(location: ProviderTomTomSearchResponseResult): LocationTomTomModelType["provider"] {
     return {
       type: "TomTom" as const,
       id: location.id,

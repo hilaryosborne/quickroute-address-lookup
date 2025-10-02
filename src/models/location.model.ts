@@ -6,7 +6,7 @@ import z, { object } from "zod";
 
 const LocationModel = object({
   address: object({
-    label: z.string().optional(),
+    display: z.string().optional(),
     street: object({
       number: z.string().optional(),
       name: z.string().optional(),

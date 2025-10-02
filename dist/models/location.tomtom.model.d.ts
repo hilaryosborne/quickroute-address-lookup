@@ -1,5 +1,5 @@
 import z from "zod";
-declare const LocationModel: z.ZodObject<{
+declare const LocationTomTomModel: z.ZodObject<{
     address: z.ZodOptional<z.ZodObject<{
         label: z.ZodOptional<z.ZodString>;
         street: z.ZodOptional<z.ZodObject<{
@@ -23,8 +23,22 @@ declare const LocationModel: z.ZodObject<{
         lat: z.ZodOptional<z.ZodNumber>;
         lng: z.ZodOptional<z.ZodNumber>;
     }, z.core.$strip>>;
-    provider: z.ZodOptional<z.ZodUnknown>;
+    provider: z.ZodOptional<z.ZodObject<{
+        type: z.ZodLiteral<"TomTom">;
+        id: z.ZodOptional<z.ZodString>;
+        score: z.ZodOptional<z.ZodNumber>;
+        viewport: z.ZodOptional<z.ZodObject<{
+            topLeftPoint: z.ZodObject<{
+                lat: z.ZodOptional<z.ZodNumber>;
+                lng: z.ZodOptional<z.ZodNumber>;
+            }, z.core.$strip>;
+            btmRightPoint: z.ZodObject<{
+                lat: z.ZodOptional<z.ZodNumber>;
+                lng: z.ZodOptional<z.ZodNumber>;
+            }, z.core.$strip>;
+        }, z.core.$strip>>;
+    }, z.core.$strip>>;
 }, z.core.$strip>;
-export type LocationModelType = z.infer<typeof LocationModel>;
-export default LocationModel;
-//# sourceMappingURL=location.model.d.ts.map
+export type LocationTomTomModelType = z.infer<typeof LocationTomTomModel>;
+export default LocationTomTomModel;
+//# sourceMappingURL=location.tomtom.model.d.ts.map

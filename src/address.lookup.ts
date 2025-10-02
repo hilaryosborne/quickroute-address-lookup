@@ -1,28 +1,47 @@
 import QuickRouteCacheI from "./cache/cache.interface";
+import QuickRouteCacheMemory from "./cache/cache.memory";
+import QuickRouteLoggerConsole from "./logger/logger.console";
 import QuickRouteLoggerI from "./logger/logger.interface";
-import { QuickRouteProviders } from "./provider";
+import { LocationModelType } from "./models/location.model";
 import QuickRouteProviderI from "./provider/provider.interface";
+import QuickRouteProviderTomTom from "./provider/provider.tomtom";
 
 type QuickRouteAddressLookupOptions = {
   logger?: QuickRouteLoggerI;
   cache?: QuickRouteCacheI;
-  providers?: QuickRouteProviderI[];
+  provider?: QuickRouteProviderI;
+};
+
+export type SearchByPartialAddressParams = {
+  query: string;
+  clientId: string;
+  correlationId?: string;
+  latLong?: { lat: number; lng: number };
+  expands?: ("address" | "geo" | "provider")[];
 };
 
 class QuickRouteAddressLookup {
-  constructor(protected options?: QuickRouteAddressLookupOptions) {}
+  protected cache: QuickRouteCacheI;
+  protected logger: QuickRouteLoggerI;
+  protected provider: QuickRouteProviderI;
 
-  public async searchByPartialAddress(params: {
-    provider: QuickRouteProviders | string;
-    query: string;
-    clientId: string;
-    correlationId?: string;
-    latLong?: { lat: number; lng: number };
-    expand?: ("address" | "geo" | "vendor")[];
-  }): Promise<any[]> {
-    const adapter = this.options?.providers?.find((p) => p.code === params.provider);
-    if (!adapter) throw new Error("PROVIDER_NOT_FOUND");
-    return [];
+  constructor(protected options?: QuickRouteAddressLookupOptions) {
+    this.logger = options?.logger || new QuickRouteLoggerConsole();
+    this.cache = options?.cache || new QuickRouteCacheMemory();
+    this.provider = options?.provider || new QuickRouteProviderTomTom({ apiKey: process.env.TOMTOM_API_KEY! });
+  }
+
+  public async searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationModelType[]> {
+    try {
+      const cached = await this.cache.getByPartialAddress(params);
+      if (cached) return cached;
+      const results = await this.provider.searchByPartialAddress(params);
+      await this.cache.setForPartialAddress(params, results);
+      return results;
+    } catch (error) {
+      this.logger.error("Error searching by partial address");
+      return [];
+    }
   }
 }
 

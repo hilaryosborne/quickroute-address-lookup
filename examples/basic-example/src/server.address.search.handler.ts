@@ -12,20 +12,16 @@ const ServerAddressSearchHandler = async (request: FastifyRequest, reply: Fastif
     cache: new QuickRouteCacheMemory(),
     // provide default providers but to allow for quick onboarding of new providers
     // allow for the consumer to provide their own providers if needed
-    providers: [
-      new QuickRouteProviderTomTom({
-        // api key can be provided here or via an environment variable
-        apiKey: process.env.TOMTOM_API_KEY!,
-        // rate limits should be set per provider as each provider will have different limits
-        limits: { maxRequests: process.env.TOMTOM_USER_MAX_REQUESTS || 5, per: process.env.TOMTOM_USER_MAX_REQUESTS_PER || "minute" },
-      }),
-    ],
+    provider: new QuickRouteProviderTomTom({
+      // api key can be provided here or via an environment variable
+      apiKey: process.env.TOMTOM_API_KEY!,
+      // rate limits should be set per provider as each provider will have different limits
+      limits: { maxRequests: process.env.TOMTOM_USER_MAX_REQUESTS || 5, per: process.env.TOMTOM_USER_MAX_REQUESTS_PER || "minute" },
+    }),
   });
 
   // have the method of partial address to allow for more specific methods later on
   const results = await lookup.searchByPartialAddress({
-    // provider code to allow for the consumer to choose the provider they want to use
-    provider: QuickRouteProviders.TomTom,
     // free text address to lookup
     // we don't want to require the consumers to do additional work to parse out address components
     query: "47 Dan Stre",
@@ -39,10 +35,10 @@ const ServerAddressSearchHandler = async (request: FastifyRequest, reply: Fastif
     latLong: { lat: 37.422, lng: -122.084 },
     // allow for control over what data is returned
     // this will default to address if not provided
-    expand: ["geo", "address"],
+    expands: ["geo", "address", "provider"],
   });
 
-  reply.send({ found: [] });
+  reply.send({ results });
 };
 
 export default ServerAddressSearchHandler;

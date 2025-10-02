@@ -1,6 +1,7 @@
-import { QuickRouteProviders } from ".";
+import { SearchByPartialAddressParams } from "../address.lookup";
+import { LocationModelType } from "../models/location.model";
 interface QuickRouteProviderI {
-    code: QuickRouteProviders | string;
+    searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationModelType[]>;
 }
 export default QuickRouteProviderI;
 //# sourceMappingURL=provider.interface.d.ts.map

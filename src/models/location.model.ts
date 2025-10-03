@@ -5,6 +5,7 @@ import z, { object } from "zod";
 // the goal is to provide a consistent model while allowing for provider specific data to be included
 
 const LocationModel = object({
+  id: z.string().optional(),
   address: object({
     display: z.string().optional(),
     street: object({

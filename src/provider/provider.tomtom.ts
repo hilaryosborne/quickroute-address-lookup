@@ -12,9 +12,11 @@ type QuickRouteProviderTomTomOptions = {
 class QuickRouteProviderTomTom implements QuickRouteProviderI {
   constructor(options?: QuickRouteProviderTomTomOptions) {}
   public async searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationTomTomModelType[]> {
+    // @TODO replace this with the actual API request
     const response = stub as QuickRouteProviderTomTomResponse;
     const results = response.results.map<LocationTomTomModelType>((result) => {
       const mapped: LocationTomTomModelType = {
+        id: this.getLocationId(result),
         provider: params.expands?.indexOf("provider") !== -1 ? this.expandProvider(result) : undefined,
         address: params.expands?.indexOf("address") !== -1 ? this.expandAddress(result) : undefined,
         geo: params.expands?.indexOf("geo") !== -1 ? this.expandGeo(result) : undefined,
@@ -24,7 +26,19 @@ class QuickRouteProviderTomTom implements QuickRouteProviderI {
     // we could trust the order from the provider, but let's be sure
     // assumption: higher score is better so lets show those first
     const ordered = results.sort((a, b) => (b.provider?.score || 0) - (a.provider?.score || 0));
+    // hmm, I wonder if we should group the results by state, city, suburb?
+    // when a lon,lat is not provided the list is pretty random
     return ordered;
+  }
+
+  protected getLocationId(location: ProviderTomTomSearchResponseResult): string | undefined {
+    return location.address?.freeformAddress
+      ? location.address.freeformAddress
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, "")
+          .replace(/\s+/g, "-")
+      : undefined;
   }
 
   protected expandAddress(location: ProviderTomTomSearchResponseResult): LocationTomTomModelType["address"] {
@@ -34,7 +48,14 @@ class QuickRouteProviderTomTom implements QuickRouteProviderI {
         number: location.address?.streetNumber,
         name: location.address?.streetName,
         // not sure about this one
-        type: location.type,
+        // tomtom seems to have varied results for street type
+        // there isn't a dedicated field... the type field sometimes comes back with "Address Range" huh?
+        // convert to kebab-case for consistency and just to be safe
+        type: location.type
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, "")
+          .replace(/\s+/g, "-"),
       },
       suburb: location.address?.municipalitySubdivision,
       city: location.address?.municipality,

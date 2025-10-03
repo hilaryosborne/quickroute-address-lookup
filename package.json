@@ -1,0 +1,30 @@
+{
+  "name": "@quickroute/address-lookup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "test": "jest",
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hilaryosborne/quickroute-address-lookup.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^30.0.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.6.2",
+    "ts-jest": "^29.4.4",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "zod": "^4.1.11"
+  }
+}

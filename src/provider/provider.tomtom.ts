@@ -23,47 +23,58 @@ type QuickRouteProviderTomTomApi = {
 type QuickRouteProviderTomTomParams = QuickRouteProviderBaseParams &
   Partial<{ api: Partial<QuickRouteProviderTomTomApi> }>;
 class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRouteProviderI {
+  // tomtom api configuration (api key, host, protocol, port)
   protected api: QuickRouteProviderTomTomApi;
+  // the provided logger we will use for everything logging
   protected logger?: QuickRouteLoggerI;
+  // the provided cache we will use for caching results
   protected cache?: QuickRouteCacheI;
 
   constructor(params?: QuickRouteProviderTomTomParams) {
     super(params);
+    // api config can be provided directly or via env vars
+    // maybe we need to perform a zod schema validation here?
     this.api = {
       key: params?.api?.key || process.env.PROVIDER_TOMTOM_API_KEY!,
       protocol: params?.api?.protocol || process.env.PROVIDER_TOMTOM_API_PROTOCOL!,
       host: params?.api?.host || process.env.PROVIDER_TOMTOM_API_HOST!,
       port: params?.api?.port || Number(process.env.PROVIDER_TOMTOM_API_PORT) || undefined,
     };
+    // check for the api config which we should have by now
+    // these can't be provided later on so error out if we don't have them
     if (!this.api.key) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_API_KEY);
     if (!this.api.protocol) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_API_PROTOCOL);
     if (!this.api.host) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_API_HOST);
   }
 
   public async searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationTomTomModelType[]> {
+    // as these can be provided on initialisation or later on the method call we need to check them here
     if (!this.logger) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_LOGGER);
     if (!this.cache) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_CACHE);
+    // check cache and if found return early
+    // this will greatly improve performance and reduce API calls/costs
     const cached = await this.cache.getByPartialAddress<LocationTomTomModelType>("TomTom", params);
     if (cached) return cached;
-    // REQUEST
+    // tomtom uses a {address}.json file request style requiring the file name to be url encoded
+    // the query can also be provided as a query param but seem like the filename is preferred
     const query = encodeURIComponent(params.query.trim());
     if (!query || query.length === 0) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_SEARCH_QUERY);
-    const http = new HttpClient({
-      base: { protocol: this.api.protocol, host: this.api.host, port: this.api.port },
-      logger: this.logger,
-    });
     const httpParams = ProviderTomTomFuzzySearchParams.parse(params.options || {});
+    // geobias is only relevant if we have a lat,lng to bias the results
+    // this seems to help with geo searching within the tomtom api
     const geobias = httpParams.lat && httpParams.lng ? `point:${httpParams.lat},${httpParams.lng}` : undefined;
     const httpArgs = ProviderTomTomFuzzySearchRequest.parse({ ...httpParams, geobias, key: this.api.key });
-
     const httpOpts = {
+      // tomtom supports the concept of corelation ids
+      // the client id and the conversation id aren't supported by tomtom but could be useful for debugging
       headers: {
         "X-Client-Id": params.tracking?.client || "",
         "X-Correlation-Id": params.tracking?.correlation || "",
         "X-Conversation-Id": params.tracking?.conversation || "",
       },
       logger: {
-        onRequest: (req: {
+        // we need to remove the key from the request logs
+        onRequestLog: (req: {
           endpoint: string;
           params: ProviderTomTomFuzzySearchRequestType;
           opts: Record<string, unknown>;
@@ -72,7 +83,8 @@ class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRo
           delete req.opts.logger;
           return req;
         },
-        onResponse: (res: {
+        // and we need to remove the key from the response logs too
+        onResponseLog: (res: {
           endpoint: string;
           params: ProviderTomTomFuzzySearchRequestType;
           opts: Record<string, unknown>;
@@ -85,18 +97,21 @@ class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRo
       },
     };
     const httpEndpoint = `search/2/search/${query}.json`;
+    const http = new HttpClient({
+      base: { protocol: this.api.protocol, host: this.api.host, port: this.api.port },
+      logger: this.logger,
+    });
     const response = await http.get<QuickRouteProviderTomTomResponse>(httpEndpoint, httpArgs, httpOpts);
 
     // MAPPING
-    const results = response.results.map<LocationTomTomModelType>((result) => {
-      const mapped: LocationTomTomModelType = {
+    const results = response.results.map<LocationTomTomModelType>((result) =>
+      LocationTomTomModel.parse({
         id: this.getLocationId(result),
         provider: params.expands?.indexOf("provider") !== -1 ? this.expandProvider(result) : undefined,
         address: params.expands?.indexOf("address") !== -1 ? this.expandAddress(result) : undefined,
         geo: params.expands?.indexOf("geo") !== -1 ? this.expandGeo(result) : undefined,
-      };
-      return LocationTomTomModel.parse(mapped);
-    });
+      }),
+    );
     // we could trust the order from the provider, but let's be sure
     // assumption: higher score is better so lets show those first
     const ordered = results.sort((a, b) => (b.provider?.score || 0) - (a.provider?.score || 0));

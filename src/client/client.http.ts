@@ -4,8 +4,8 @@ import QuickRouteLoggerI from "../logger/logger.interface";
 export type HttpRequestOptions = {
   headers?: { [key: string]: string };
   logger?: {
-    onRequest?: (req: any) => any;
-    onResponse?: (res: any) => any;
+    onRequestLog?: (req: any) => any;
+    onResponseLog?: (res: any) => any;
   };
 };
 
@@ -39,7 +39,7 @@ class HttpClient {
     const url = this.getUrl(endpoint, params);
     this.logger.info(
       `QUICKROUTE_HTTP_REQUEST`,
-      opts?.logger?.onRequest?.({ endpoint, params: { ...params }, opts: { ...opts } }) || {
+      opts?.logger?.onRequestLog?.({ endpoint, params: { ...params }, opts: { ...opts } }) || {
         endpoint,
         params: { ...params },
         opts: { ...opts },
@@ -58,7 +58,7 @@ class HttpClient {
     const json = await response.json();
     this.logger.info(
       `QUICKROUTE_HTTP_RESPONSE`,
-      opts?.logger?.onResponse?.({ endpoint, params: { ...params }, opts: { ...opts }, response: json }) || {
+      opts?.logger?.onResponseLog?.({ endpoint, params: { ...params }, opts: { ...opts }, response: json }) || {
         endpoint,
         params: { ...params },
         opts: { ...opts },

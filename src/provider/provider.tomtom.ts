@@ -52,7 +52,7 @@ class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRo
     if (!this.logger) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_LOGGER);
     if (!this.cache) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_CACHE);
     // check cache and if found return early
-    // this will greatly improve performance and reduce API calls/costs
+    // this will greatly improve performance and reduce API calls/costs to tomtom
     const cached = await this.cache.getByPartialAddress<LocationTomTomModelType>("TomTom", params);
     if (cached) return cached;
     // tomtom uses a {address}.json file request style requiring the file name to be url encoded
@@ -103,7 +103,8 @@ class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRo
     });
     const response = await http.get<QuickRouteProviderTomTomResponse>(httpEndpoint, httpArgs, httpOpts);
 
-    // MAPPING
+    // mapping the results from tomtom to our universal location model
+    // the use of expands will limit the data we extract and store based on the consumer needs
     const results = response.results.map<LocationTomTomModelType>((result) =>
       LocationTomTomModel.parse({
         id: this.getLocationId(result),

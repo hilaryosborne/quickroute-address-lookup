@@ -1,4 +1,10 @@
-import { QuickRouteAddressLookup, QuickRouteCacheMemory, QuickRouteLoggerConsole, QuickRouteProviders, QuickRouteProviderTomTom } from "@quickroute/address-lookup";
+import {
+  QuickRouteAddressLookup,
+  QuickRouteCacheMemory,
+  QuickRouteLoggerConsole,
+  QuickRouteProviders,
+  QuickRouteProviderTomTom,
+} from "@quickroute/address-lookup";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { nanoid } from "nanoid";
 
@@ -15,8 +21,6 @@ const ServerAddressSearchHandler = async (request: FastifyRequest, reply: Fastif
     provider: new QuickRouteProviderTomTom({
       // api key can be provided here or via an environment variable
       apiKey: process.env.TOMTOM_API_KEY!,
-      // rate limits should be set per provider as each provider will have different limits
-      limits: { maxRequests: process.env.TOMTOM_USER_MAX_REQUESTS || 5, per: process.env.TOMTOM_USER_MAX_REQUESTS_PER || "minute" },
     }),
   });
 
@@ -25,17 +29,17 @@ const ServerAddressSearchHandler = async (request: FastifyRequest, reply: Fastif
     // free text address to lookup
     // we don't want to require the consumers to do additional work to parse out address components
     query: "47 Dan Stre",
-    // used for rate limiting
-    // maybe this could be used to track user uses?
-    // assumption is that the user would be signed in by this point
-    clientId: "USR-123456",
-    // used for tracing requests through and the provider systems (optional)
-    correlationId: nanoid(),
     // the latLong is optional, but can help improve accuracy
     latLong: { lat: 37.422, lng: -122.084 },
     // allow for control over what data is returned
     // this will default to address if not provided
     expands: ["geo", "address", "provider"],
+    // tracking ids (optional)
+    tracking: {
+      client: "USR-123456",
+      correlation: nanoid(),
+      conversation: nanoid(),
+    },
   });
 
   reply.send({ results });

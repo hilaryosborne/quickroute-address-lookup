@@ -1,7 +1,7 @@
 import QuickRouteCacheI from "../cache/cache.interface";
 import QuickRouteLoggerI from "../logger/logger.interface";
 
-export type QuickRouteProviderBaseOptions = {
+export type QuickRouteProviderBaseParams = {
   logger?: QuickRouteLoggerI;
   cache?: QuickRouteCacheI;
 };
@@ -9,9 +9,9 @@ export type QuickRouteProviderBaseOptions = {
 class QuickRouteProviderBase {
   protected logger?: QuickRouteLoggerI;
   protected cache?: QuickRouteCacheI;
-  constructor(options?: QuickRouteProviderBaseOptions) {
-    this.logger = options?.logger;
-    this.cache = options?.cache;
+  constructor(params?: QuickRouteProviderBaseParams) {
+    this.logger = params?.logger;
+    this.cache = params?.cache;
   }
   public setLogger(logger: QuickRouteLoggerI): void {
     this.logger = logger;

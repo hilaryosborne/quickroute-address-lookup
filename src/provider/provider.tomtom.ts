@@ -7,24 +7,51 @@ import { QuickRouteProviderErrors } from "./provider.errors";
 import HttpClient from "../client/client.http";
 import QuickRouteLoggerI from "../logger/logger.interface";
 import { QuickRouteCacheI } from "../cache";
-import QuickRouteProviderBase, { QuickRouteProviderBaseOptions } from "./provider.base";
+import QuickRouteProviderBase, { QuickRouteProviderBaseParams } from "./provider.base";
 
-type QuickRouteProviderTomTomOptions = QuickRouteProviderBaseOptions & {
-  apiKey?: string;
-  apiUrl?: string;
-  limits?: { maxRequests: number; per: "second" | "minute" | "hour" | "day" };
+type QuickRouteProviderTomTomConfig = {
+  typeahead: string;
+  limit: string;
+  countrySet: "AU";
+  minFuzzyLevel: string;
+  maxFuzzyLevel: string;
+  idxSet: string;
+  view: "Unified";
+  relatedPois: "off";
 };
 
+type QuickRouteProviderTomTomApi = {
+  apiKey: string;
+  apiUrl: string;
+};
+
+type QuickRouteProviderTomTomParams = QuickRouteProviderBaseParams &
+  Partial<QuickRouteProviderTomTomApi> & {
+    config?: Partial<Omit<QuickRouteProviderTomTomConfig, "countrySet" | "countrySet" | "view" | "relatedPois">>;
+  };
 class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRouteProviderI {
-  protected options: QuickRouteProviderTomTomOptions;
+  protected api: QuickRouteProviderTomTomApi;
   protected logger?: QuickRouteLoggerI;
   protected cache?: QuickRouteCacheI;
-  constructor(options?: QuickRouteProviderTomTomOptions) {
-    super(options);
-    this.options = {
-      apiKey: options?.apiKey || process.env.TOMTOM_API_KEY!,
-      apiUrl: options?.apiUrl || "https://api.tomtom.com",
-      limits: options?.limits || { maxRequests: 50, per: "minute" },
+  protected config?: QuickRouteProviderTomTomConfig;
+
+  constructor(params?: QuickRouteProviderTomTomParams) {
+    super(params);
+    this.api = {
+      apiKey: params?.apiKey || process.env.TOMTOM_API_KEY!,
+      apiUrl: params?.apiUrl || "https://api.tomtom.com",
+    };
+    if (!this.api.apiKey) throw new Error(QuickRouteProviderErrors.MISSING_API_KEY);
+    if (!this.api.apiUrl) throw new Error(QuickRouteProviderErrors.MISSING_API_URL);
+    this.config = {
+      typeahead: params?.config?.typeahead || "true",
+      limit: params?.config?.limit || "15",
+      countrySet: "AU",
+      minFuzzyLevel: params?.config?.minFuzzyLevel || "1",
+      maxFuzzyLevel: params?.config?.maxFuzzyLevel || "2",
+      idxSet: params?.config?.idxSet || "Addr,Str",
+      view: "Unified",
+      relatedPois: "off",
     };
   }
 
@@ -34,30 +61,18 @@ class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRo
     const cached = await this.cache.getByPartialAddress<LocationTomTomModelType>("TomTom", params);
     if (cached) return cached;
     // REQUEST
-    const apiKey = this.options?.apiKey || process.env.TOMTOM_API_KEY;
-    if (!apiKey) throw new Error(QuickRouteProviderErrors.MISSING_API_KEY);
     const query = encodeURIComponent(params.query.trim());
     if (!query || query.length === 0) throw new Error(QuickRouteProviderErrors.MISSING_SEARCH_QUERY);
-    const url = this.options.apiUrl;
+    const url = this.api.apiUrl;
     const endpoint = `/search/2/search/${query}.json`;
-    const args = new URLSearchParams({
-      typeahead: "true",
-      limit: "15",
-      countrySet: "AU",
-      minFuzzyLevel: "1",
-      maxFuzzyLevel: "2",
-      idxSet: "Addr,Str",
-      view: "Unified",
-      relatedPois: "off",
-      key: apiKey,
-    });
+    const args = new URLSearchParams({ ...this.config, key: this.api.apiKey });
     const request = await fetch(`${url}${endpoint}?${args.toString()}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Client-Id": params.clientId,
-        "X-Correlation-Id": params.correlationId || "",
-        "X-Communication-Id": `quickroute-${Math.random().toString(36).substring(2, 15)}`,
+        "X-Client-Id": params.tracking?.client || "",
+        "X-Correlation-Id": params.tracking?.correlation || "",
+        "X-Conversation-Id": params.tracking?.conversation || "",
       },
     });
     const response = (await request.json()) as QuickRouteProviderTomTomResponse;

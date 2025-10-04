@@ -29,7 +29,10 @@ class QuickRouteCacheMemory extends QuickRouteCacheBase implements QuickRouteCac
     this.config = { maxSize: options?.maxSize || 1000, batchSize: 0.1 };
   }
 
-  public async getByPartialAddress<L extends LocationModelType>(provider: string, params: SearchByPartialAddressParams): Promise<L[] | null> {
+  public async getByPartialAddress<L extends LocationModelType>(
+    provider: string,
+    params: SearchByPartialAddressParams & { expands: string[] },
+  ): Promise<L[] | null> {
     const cache = QuickRouteCacheMemory.cache;
     const key = this.generatePartialAddressKey(provider, params);
     const cached = cache.has(key) ? cache.get(key) : null;
@@ -39,7 +42,11 @@ class QuickRouteCacheMemory extends QuickRouteCacheBase implements QuickRouteCac
     } else return null;
   }
 
-  public async setForPartialAddress<L extends LocationModelType>(provider: string, params: SearchByPartialAddressParams, results: L[]): Promise<void> {
+  public async setForPartialAddress<L extends LocationModelType>(
+    provider: string,
+    params: SearchByPartialAddressParams & { expands: string[] },
+    results: L[],
+  ): Promise<void> {
     const cache = QuickRouteCacheMemory.cache;
     if (cache.size >= this.config.maxSize) this.cleanCacheByBatch();
     const key = this.generatePartialAddressKey(provider, params);

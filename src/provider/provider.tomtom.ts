@@ -2,80 +2,66 @@ import QuickRouteProviderI from "./provider.interface";
 import QuickRouteProviderTomTomResponse, { ProviderTomTomSearchResponseResult } from "./provider.tomtom.response.type";
 import LocationTomTomModel, { LocationTomTomModelType } from "../models/location.tomtom.model";
 import { SearchByPartialAddressParams } from "../address.lookup";
-import fetch from "node-fetch";
 import { QuickRouteProviderErrors } from "./provider.errors";
 import HttpClient from "../client/client.http";
 import QuickRouteLoggerI from "../logger/logger.interface";
 import { QuickRouteCacheI } from "../cache";
 import QuickRouteProviderBase, { QuickRouteProviderBaseParams } from "./provider.base";
-
-type QuickRouteProviderTomTomConfig = {
-  typeahead: string;
-  limit: string;
-  countrySet: "AU";
-  minFuzzyLevel: string;
-  maxFuzzyLevel: string;
-  idxSet: string;
-  view: "Unified";
-  relatedPois: "off";
-};
+import { ProviderTomTomFuzzySearchParams, ProviderTomTomFuzzySearchRequest } from "./provider.tomtom.request.type";
 
 type QuickRouteProviderTomTomApi = {
-  apiKey: string;
-  apiUrl: string;
+  key: string;
+  protocol: string;
+  host: string;
+  port?: number;
 };
 
 type QuickRouteProviderTomTomParams = QuickRouteProviderBaseParams &
-  Partial<QuickRouteProviderTomTomApi> & {
-    config?: Partial<Omit<QuickRouteProviderTomTomConfig, "countrySet" | "countrySet" | "view" | "relatedPois">>;
-  };
+  Partial<{ api: Partial<QuickRouteProviderTomTomApi> }>;
 class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRouteProviderI {
   protected api: QuickRouteProviderTomTomApi;
   protected logger?: QuickRouteLoggerI;
   protected cache?: QuickRouteCacheI;
-  protected config?: QuickRouteProviderTomTomConfig;
 
   constructor(params?: QuickRouteProviderTomTomParams) {
     super(params);
     this.api = {
-      apiKey: params?.apiKey || process.env.TOMTOM_API_KEY!,
-      apiUrl: params?.apiUrl || "https://api.tomtom.com",
+      key: params?.api?.key || process.env.PROVIDER_TOMTOM_API_KEY!,
+      protocol: params?.api?.protocol || process.env.PROVIDER_TOMTOM_API_PROTOCOL!,
+      host: params?.api?.host || process.env.PROVIDER_TOMTOM_API_HOST!,
+      port: params?.api?.port || Number(process.env.PROVIDER_TOMTOM_API_PORT) || undefined,
     };
-    if (!this.api.apiKey) throw new Error(QuickRouteProviderErrors.MISSING_API_KEY);
-    if (!this.api.apiUrl) throw new Error(QuickRouteProviderErrors.MISSING_API_URL);
-    this.config = {
-      typeahead: params?.config?.typeahead || "true",
-      limit: params?.config?.limit || "15",
-      countrySet: "AU",
-      minFuzzyLevel: params?.config?.minFuzzyLevel || "1",
-      maxFuzzyLevel: params?.config?.maxFuzzyLevel || "2",
-      idxSet: params?.config?.idxSet || "Addr,Str",
-      view: "Unified",
-      relatedPois: "off",
-    };
+    if (!this.api.key) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_API_KEY);
+    if (!this.api.protocol) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_API_PROTOCOL);
+    if (!this.api.host) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_API_HOST);
   }
 
   public async searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationTomTomModelType[]> {
-    if (!this.logger) throw new Error(QuickRouteProviderErrors.MISSING_LOGGER);
-    if (!this.cache) throw new Error(QuickRouteProviderErrors.MISSING_CACHE);
+    if (!this.logger) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_LOGGER);
+    if (!this.cache) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_CACHE);
     const cached = await this.cache.getByPartialAddress<LocationTomTomModelType>("TomTom", params);
     if (cached) return cached;
     // REQUEST
     const query = encodeURIComponent(params.query.trim());
-    if (!query || query.length === 0) throw new Error(QuickRouteProviderErrors.MISSING_SEARCH_QUERY);
-    const url = this.api.apiUrl;
-    const endpoint = `/search/2/search/${query}.json`;
-    const args = new URLSearchParams({ ...this.config, key: this.api.apiKey });
-    const request = await fetch(`${url}${endpoint}?${args.toString()}`, {
-      method: "GET",
+    if (!query || query.length === 0) throw new Error(QuickRouteProviderErrors.MISSING_PROVIDER_SEARCH_QUERY);
+    const http = new HttpClient({
+      base: { protocol: this.api.protocol, host: this.api.host, port: this.api.port },
+      logger: this.logger,
+    });
+    const httpParams = ProviderTomTomFuzzySearchParams.parse(params.options || {});
+    const geobias = httpParams.lat && httpParams.lng ? `point:${httpParams.lat},${httpParams.lng}` : undefined;
+    const httpArgs = ProviderTomTomFuzzySearchRequest.parse({ ...httpParams, geobias, key: this.api.key });
+
+    const httpOpts = {
       headers: {
-        "Content-Type": "application/json",
         "X-Client-Id": params.tracking?.client || "",
         "X-Correlation-Id": params.tracking?.correlation || "",
         "X-Conversation-Id": params.tracking?.conversation || "",
       },
-    });
-    const response = (await request.json()) as QuickRouteProviderTomTomResponse;
+    };
+    const httpEndpoint = `search/2/search/${query}.json`;
+    const response = await http.get<QuickRouteProviderTomTomResponse>(httpEndpoint, httpArgs, httpOpts);
+
     // MAPPING
     const results = response.results.map<LocationTomTomModelType>((result) => {
       const mapped: LocationTomTomModelType = {
@@ -91,7 +77,7 @@ class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRo
     const ordered = results.sort((a, b) => (b.provider?.score || 0) - (a.provider?.score || 0));
     // hmm, I wonder if we should group the results by state, city, suburb?
     // when a lon,lat is not provided the list is pretty random
-    await this.cache.setForPartialAddress<LocationTomTomModelType>("TomTom", params, results);
+    await this.cache.setForPartialAddress<LocationTomTomModelType>("TomTom", params, ordered);
     return ordered;
   }
 

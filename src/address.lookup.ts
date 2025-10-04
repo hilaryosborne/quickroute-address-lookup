@@ -14,7 +14,7 @@ type QuickRouteAddressLookupOptions = {
 
 export type SearchByPartialAddressParams = {
   query: string;
-  latLong?: { lat: number; lng: number };
+  options?: Record<string, unknown>;
   expands?: ("address" | "geo" | "provider")[];
   tracking?: { client?: string; correlation?: string; conversation?: string };
 };

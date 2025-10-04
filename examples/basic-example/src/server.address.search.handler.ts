@@ -20,7 +20,11 @@ const ServerAddressSearchHandler = async (request: FastifyRequest, reply: Fastif
     // allow for the consumer to provide their own providers if needed
     provider: new QuickRouteProviderTomTom({
       // api key can be provided here or via an environment variable
-      apiKey: process.env.TOMTOM_API_KEY!,
+      api: {
+        key: process.env.PROVIDER_TOMTOM_API_KEY!,
+        protocol: process.env.PROVIDER_TOMTOM_API_PROTOCOL,
+        host: process.env.PROVIDER_TOMTOM_API_HOST,
+      },
     }),
   });
 
@@ -28,9 +32,9 @@ const ServerAddressSearchHandler = async (request: FastifyRequest, reply: Fastif
   const results = await lookup.searchByPartialAddress({
     // free text address to lookup
     // we don't want to require the consumers to do additional work to parse out address components
-    query: "47 Dan Stre",
-    // the latLong is optional, but can help improve accuracy
-    latLong: { lat: 37.422, lng: -122.084 },
+    query: "47 Dan Street, Gracevile, QLD",
+    // options: { limit: 5, lat: -27.565843, lng: 152.800113, radius: 3 },
+    options: { limit: 15 },
     // allow for control over what data is returned
     // this will default to address if not provided
     expands: ["geo", "address", "provider"],

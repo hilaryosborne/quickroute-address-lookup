@@ -1,34 +1,58 @@
 import { SearchByPartialAddressParams } from "../address.lookup";
-import QuickRouteLoggerI from "../logger/logger.interface";
+import { LocationModelType } from "../models/location.model";
+import QuickRouteCacheBase, { QuickRouteCacheBaseOptions } from "./cache.base";
 import QuickRouteCacheI from "./cache.interface";
 
-const cache = new Map<string, any>();
+type QuickRouteCacheMemoryConfig = {
+  maxSize: number;
+  batchSize: number;
+};
 
-class QuickRouteCacheMemory implements QuickRouteCacheI {
-  protected logger?: QuickRouteLoggerI;
-  constructor(options?: { logger?: QuickRouteLoggerI }) {
-    if (options) {
-      this.logger = options.logger;
+type QuickRouteCacheMemoryOptions = QuickRouteCacheBaseOptions & {
+  maxSize?: number;
+  batchSize?: number;
+};
+
+type CacheEntry = {
+  key: string;
+  provider: string;
+  results: any[];
+  timestamp: number;
+};
+
+class QuickRouteCacheMemory extends QuickRouteCacheBase implements QuickRouteCacheI {
+  protected config: QuickRouteCacheMemoryConfig;
+  protected static cache: Map<string, CacheEntry> = new Map();
+
+  constructor(options?: QuickRouteCacheMemoryOptions) {
+    super(options);
+    this.config = { maxSize: options?.maxSize || 1000, batchSize: 0.1 };
+  }
+
+  public async getByPartialAddress<L extends LocationModelType>(provider: string, params: SearchByPartialAddressParams): Promise<L[] | null> {
+    const cache = QuickRouteCacheMemory.cache;
+    const key = this.generatePartialAddressKey(provider, params);
+    const cached = cache.has(key) ? cache.get(key) : null;
+    if (cached) {
+      cached.timestamp = Date.now();
+      return cached.results;
+    } else return null;
+  }
+
+  public async setForPartialAddress<L extends LocationModelType>(provider: string, params: SearchByPartialAddressParams, results: L[]): Promise<void> {
+    const cache = QuickRouteCacheMemory.cache;
+    if (cache.size >= this.config.maxSize) this.cleanCacheByBatch();
+    const key = this.generatePartialAddressKey(provider, params);
+    cache.set(key, { key, provider, results, timestamp: Date.now() });
+  }
+
+  protected cleanCacheByBatch() {
+    const cache = QuickRouteCacheMemory.cache;
+    const deleteCount = Math.floor(this.config.maxSize * this.config.batchSize);
+    const sortedByTimestamp = Array.from(cache.values()).sort((a, b) => a.timestamp - b.timestamp);
+    for (let i = 0; i < deleteCount && i < sortedByTimestamp.length; i++) {
+      cache.delete(sortedByTimestamp[i].key);
     }
-  }
-  public setLogger(logger: QuickRouteLoggerI): void {
-    this.logger = logger;
-  }
-  public hasLogger(): boolean {
-    return !!this.logger;
-  }
-  public async getByPartialAddress(params: SearchByPartialAddressParams): Promise<any[] | null> {
-    const key = this.generateKey(params);
-    return cache.has(key) ? cache.get(key) : null;
-  }
-
-  public async setForPartialAddress(params: SearchByPartialAddressParams, results: any[]): Promise<void> {
-    const key = this.generateKey(params);
-    cache.set(key, results);
-  }
-
-  protected generateKey(params: any): string {
-    return params.query.toLowerCase().trim();
   }
 }
 

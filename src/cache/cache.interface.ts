@@ -5,8 +5,8 @@ import { LocationModelType } from "../models/location.model";
 interface QuickRouteCacheI {
   setLogger(logger: QuickRouteLoggerI): void;
   hasLogger(): boolean;
-  getByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationModelType[] | null>;
-  setForPartialAddress(params: SearchByPartialAddressParams, results: LocationModelType[]): Promise<void>;
+  getByPartialAddress<L extends LocationModelType>(provider: string, params: SearchByPartialAddressParams): Promise<L[] | null>;
+  setForPartialAddress<L extends LocationModelType>(provider: string, params: SearchByPartialAddressParams, results: L[]): Promise<void>;
 }
 
 export default QuickRouteCacheI;

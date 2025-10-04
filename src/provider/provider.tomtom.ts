@@ -6,32 +6,33 @@ import fetch from "node-fetch";
 import { QuickRouteProviderErrors } from "./provider.errors";
 import HttpClient from "../client/client.http";
 import QuickRouteLoggerI from "../logger/logger.interface";
+import { QuickRouteCacheI } from "../cache";
+import QuickRouteProviderBase, { QuickRouteProviderBaseOptions } from "./provider.base";
 
-type QuickRouteProviderTomTomOptions = {
+type QuickRouteProviderTomTomOptions = QuickRouteProviderBaseOptions & {
   apiKey?: string;
   apiUrl?: string;
-  logger?: QuickRouteLoggerI;
   limits?: { maxRequests: number; per: "second" | "minute" | "hour" | "day" };
 };
 
-class QuickRouteProviderTomTom implements QuickRouteProviderI {
+class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRouteProviderI {
   protected options: QuickRouteProviderTomTomOptions;
   protected logger?: QuickRouteLoggerI;
+  protected cache?: QuickRouteCacheI;
   constructor(options?: QuickRouteProviderTomTomOptions) {
-    this.logger = options?.logger;
+    super(options);
     this.options = {
       apiKey: options?.apiKey || process.env.TOMTOM_API_KEY!,
       apiUrl: options?.apiUrl || "https://api.tomtom.com",
       limits: options?.limits || { maxRequests: 50, per: "minute" },
     };
   }
-  public setLogger(logger: QuickRouteLoggerI): void {
-    this.logger = logger;
-  }
-  public hasLogger(): boolean {
-    return !!this.logger;
-  }
+
   public async searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationTomTomModelType[]> {
+    if (!this.logger) throw new Error(QuickRouteProviderErrors.MISSING_LOGGER);
+    if (!this.cache) throw new Error(QuickRouteProviderErrors.MISSING_CACHE);
+    const cached = await this.cache.getByPartialAddress<LocationTomTomModelType>("TomTom", params);
+    if (cached) return cached;
     // REQUEST
     const apiKey = this.options?.apiKey || process.env.TOMTOM_API_KEY;
     if (!apiKey) throw new Error(QuickRouteProviderErrors.MISSING_API_KEY);
@@ -50,7 +51,6 @@ class QuickRouteProviderTomTom implements QuickRouteProviderI {
       relatedPois: "off",
       key: apiKey,
     });
-    // const http = new HttpClient({ logger: this.logger });
     const request = await fetch(`${url}${endpoint}?${args.toString()}`, {
       method: "GET",
       headers: {
@@ -76,6 +76,7 @@ class QuickRouteProviderTomTom implements QuickRouteProviderI {
     const ordered = results.sort((a, b) => (b.provider?.score || 0) - (a.provider?.score || 0));
     // hmm, I wonder if we should group the results by state, city, suburb?
     // when a lon,lat is not provided the list is pretty random
+    await this.cache.setForPartialAddress<LocationTomTomModelType>("TomTom", params, results);
     return ordered;
   }
 

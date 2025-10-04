@@ -1,4 +1,4 @@
-import QuickRouteProviderTomTom from "./provider.tomtom";
+import QuickRouteProviderTomTom from "../provider.tomtom";
 
 describe("provider tomtom", () => {
   it("can instantiate the tom tom provider", async () => {

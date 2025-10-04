@@ -1,4 +1,4 @@
-import QuickRouteLoggerConsole from "./logger.console";
+import QuickRouteLoggerConsole from "../logger.console";
 
 describe("logger console", () => {
   it("can instantiate the logger console", async () => {

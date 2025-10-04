@@ -1,19 +1,67 @@
 import QuickRouteProviderI from "./provider.interface";
-import stub from "./__stubs__/tomtom.search.success";
 import QuickRouteProviderTomTomResponse, { ProviderTomTomSearchResponseResult } from "./provider.tomtom.response.type";
 import LocationTomTomModel, { LocationTomTomModelType } from "../models/location.tomtom.model";
 import { SearchByPartialAddressParams } from "../address.lookup";
+import fetch from "node-fetch";
+import { QuickRouteProviderErrors } from "./provider.errors";
+import HttpClient from "../client/client.http";
+import QuickRouteLoggerI from "../logger/logger.interface";
 
 type QuickRouteProviderTomTomOptions = {
-  apiKey: string;
+  apiKey?: string;
+  apiUrl?: string;
+  logger?: QuickRouteLoggerI;
   limits?: { maxRequests: number; per: "second" | "minute" | "hour" | "day" };
 };
 
 class QuickRouteProviderTomTom implements QuickRouteProviderI {
-  constructor(options?: QuickRouteProviderTomTomOptions) {}
+  protected options: QuickRouteProviderTomTomOptions;
+  protected logger?: QuickRouteLoggerI;
+  constructor(options?: QuickRouteProviderTomTomOptions) {
+    this.logger = options?.logger;
+    this.options = {
+      apiKey: options?.apiKey || process.env.TOMTOM_API_KEY!,
+      apiUrl: options?.apiUrl || "https://api.tomtom.com",
+      limits: options?.limits || { maxRequests: 50, per: "minute" },
+    };
+  }
+  public setLogger(logger: QuickRouteLoggerI): void {
+    this.logger = logger;
+  }
+  public hasLogger(): boolean {
+    return !!this.logger;
+  }
   public async searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationTomTomModelType[]> {
-    // @TODO replace this with the actual API request
-    const response = stub as QuickRouteProviderTomTomResponse;
+    // REQUEST
+    const apiKey = this.options?.apiKey || process.env.TOMTOM_API_KEY;
+    if (!apiKey) throw new Error(QuickRouteProviderErrors.MISSING_API_KEY);
+    const query = encodeURIComponent(params.query.trim());
+    if (!query || query.length === 0) throw new Error(QuickRouteProviderErrors.MISSING_SEARCH_QUERY);
+    const url = this.options.apiUrl;
+    const endpoint = `/search/2/search/${query}.json`;
+    const args = new URLSearchParams({
+      typeahead: "true",
+      limit: "15",
+      countrySet: "AU",
+      minFuzzyLevel: "1",
+      maxFuzzyLevel: "2",
+      idxSet: "Addr,Str",
+      view: "Unified",
+      relatedPois: "off",
+      key: apiKey,
+    });
+    // const http = new HttpClient({ logger: this.logger });
+    const request = await fetch(`${url}${endpoint}?${args.toString()}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Client-Id": params.clientId,
+        "X-Correlation-Id": params.correlationId || "",
+        "X-Communication-Id": `quickroute-${Math.random().toString(36).substring(2, 15)}`,
+      },
+    });
+    const response = (await request.json()) as QuickRouteProviderTomTomResponse;
+    // MAPPING
     const results = response.results.map<LocationTomTomModelType>((result) => {
       const mapped: LocationTomTomModelType = {
         id: this.getLocationId(result),

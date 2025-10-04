@@ -1,0 +1,4 @@
+export const enum QuickRouteProviderErrors {
+  MISSING_API_KEY = "MISSING_API_KEY",
+  MISSING_SEARCH_QUERY = "MISSING_SEARCH_QUERY",
+}

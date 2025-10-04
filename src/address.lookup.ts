@@ -27,8 +27,27 @@ class QuickRouteAddressLookup {
 
   constructor(protected options?: QuickRouteAddressLookupOptions) {
     this.logger = options?.logger || new QuickRouteLoggerConsole();
-    this.cache = options?.cache || undefined;
+    // I really miss dependency injection here
+    // there are some benefits to utilising the factory pattern
+    // this allows for this class to perform additional setup if required
+    this.cache = this.createCache(options?.cache);
     this.provider = options?.provider || new QuickRouteProviderTomTom({ apiKey: process.env.TOMTOM_API_KEY! });
+  }
+
+  protected createCache(cache: QuickRouteCacheI | undefined) {
+    if (cache && !cache.hasLogger()) {
+      cache.setLogger(this.logger);
+      return cache;
+    } else if (cache) return cache;
+    else return new QuickRouteCacheMemory({ logger: this.logger });
+  }
+
+  protected createProvider(provider: QuickRouteProviderI) {
+    if (provider && !provider.hasLogger()) {
+      provider.setLogger(this.logger);
+      return provider;
+    } else if (provider) return provider;
+    else return new QuickRouteProviderTomTom({ logger: this.logger });
   }
 
   public async searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationModelType[]> {
@@ -37,7 +56,10 @@ class QuickRouteAddressLookup {
       // to be as flexible as possible I think it should.. though heavily recommended to use one
       if (this.cache) {
         const cached = await this.cache.getByPartialAddress(params);
-        if (cached) return cached;
+        if (cached) {
+          this.logger.log("Cache hit");
+          return cached;
+        } else this.logger.log("Cache miss");
       }
       const results = await this.provider.searchByPartialAddress(params);
       // setting the cache shouldn't block the return of results

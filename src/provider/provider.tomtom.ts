@@ -2,12 +2,16 @@ import QuickRouteProviderI from "./provider.interface";
 import QuickRouteProviderTomTomResponse, { ProviderTomTomSearchResponseResult } from "./provider.tomtom.response.type";
 import LocationTomTomModel, { LocationTomTomModelType } from "../models/location.tomtom.model";
 import { SearchByPartialAddressParams } from "../address.lookup";
-import { QuickRouteProviderErrors } from "./provider.errors";
+import QuickRouteProviderErrors from "./provider.errors";
 import HttpClient from "../client/client.http";
 import QuickRouteLoggerI from "../logger/logger.interface";
 import { QuickRouteCacheI } from "../cache";
 import QuickRouteProviderBase, { QuickRouteProviderBaseParams } from "./provider.base";
-import { ProviderTomTomFuzzySearchParams, ProviderTomTomFuzzySearchRequest } from "./provider.tomtom.request.type";
+import {
+  ProviderTomTomFuzzySearchParams,
+  ProviderTomTomFuzzySearchRequest,
+  ProviderTomTomFuzzySearchRequestType,
+} from "./provider.tomtom.request.type";
 
 type QuickRouteProviderTomTomApi = {
   key: string;
@@ -57,6 +61,27 @@ class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRo
         "X-Client-Id": params.tracking?.client || "",
         "X-Correlation-Id": params.tracking?.correlation || "",
         "X-Conversation-Id": params.tracking?.conversation || "",
+      },
+      logger: {
+        onRequest: (req: {
+          endpoint: string;
+          params: ProviderTomTomFuzzySearchRequestType;
+          opts: Record<string, unknown>;
+        }): any => {
+          delete req.params.key;
+          delete req.opts.logger;
+          return req;
+        },
+        onResponse: (res: {
+          endpoint: string;
+          params: ProviderTomTomFuzzySearchRequestType;
+          opts: Record<string, unknown>;
+          response: QuickRouteProviderTomTomResponse;
+        }): any => {
+          delete res.params.key;
+          delete res.opts.logger;
+          return res;
+        },
       },
     };
     const httpEndpoint = `search/2/search/${query}.json`;

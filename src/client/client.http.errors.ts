@@ -1,1 +1,3 @@
-export const enum QuickRouteHttpErrors {}
+const enum QuickRouteHttpErrors {}
+
+export default QuickRouteHttpErrors;

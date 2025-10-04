@@ -2,7 +2,6 @@ import {
   QuickRouteAddressLookup,
   QuickRouteCacheMemory,
   QuickRouteLoggerConsole,
-  QuickRouteProviders,
   QuickRouteProviderTomTom,
 } from "@quickroute/address-lookup";
 import { FastifyReply, FastifyRequest } from "fastify";

@@ -1,4 +1,4 @@
-export const enum QuickRouteProviderErrors {
+const enum QuickRouteProviderErrors {
   MISSING_PROVIDER_API_KEY = "MISSING_PROVIDER_API_KEY",
   MISSING_PROVIDER_API_PROTOCOL = "MISSING_PROVIDER_API_PROTOCOL",
   MISSING_PROVIDER_API_HOST = "MISSING_PROVIDER_API_HOST",
@@ -6,3 +6,5 @@ export const enum QuickRouteProviderErrors {
   MISSING_PROVIDER_LOGGER = "MISSING_PROVIDER_LOGGER",
   MISSING_PROVIDER_CACHE = "MISSING_PROVIDER_CACHE",
 }
+
+export default QuickRouteProviderErrors;

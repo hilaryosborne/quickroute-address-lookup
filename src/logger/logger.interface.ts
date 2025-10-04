@@ -3,11 +3,11 @@ export type QuickRouteLoggerOptions = {
 };
 
 interface QuickRouteLoggerI {
-  log: (message: string) => void;
-  error: (message: string) => void;
-  warn: (message: string) => void;
-  info: (message: string) => void;
-  debug: (message: string) => void;
+  log: (message: string, data?: Record<string, unknown>) => void;
+  error: (message: string, data?: Record<string, unknown>) => void;
+  warn: (message: string, data?: Record<string, unknown>) => void;
+  info: (message: string, data?: Record<string, unknown>) => void;
+  debug: (message: string, data?: Record<string, unknown>) => void;
 }
 
 export default QuickRouteLoggerI;

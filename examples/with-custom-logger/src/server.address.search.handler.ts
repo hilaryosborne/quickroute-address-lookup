@@ -1,4 +1,8 @@
-import { QuickRouteAddressLookup, QuickRouteCacheMemory, QuickRouteProviderTomTom } from "@quickroute/address-lookup";
+import {
+  QuickRouteAddressLookup,
+  QuickRouteCacheMemory,
+  QuickRouteProviderTomTom,
+} from "@hilaryosborne/quickroute-address-lookup";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { nanoid } from "nanoid";
 import QuickRouteWinstonLogger from "./server.winston.logger";

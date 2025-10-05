@@ -1,4 +1,4 @@
-import { QuickRouteLoggerI } from "@quickroute/address-lookup";
+import { QuickRouteLoggerI } from "@hilaryosborne/quickroute-address-lookup";
 
 class QuickRouteWinstonLogger implements QuickRouteLoggerI {
   constructor(options: { level: string }) {}

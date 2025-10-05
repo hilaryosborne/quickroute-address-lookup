@@ -1,4 +1,4 @@
-name: On Pull Request
+name: on pull request
 
 on:
   pull_request:
@@ -8,3 +8,6 @@ on:
 jobs:
   quality-checks:
     uses: ./.github/workflows/common-quality-check.yml
+  release-library:
+    uses: ./.github/workflows/common-release.yml
+    needs: quality-checks

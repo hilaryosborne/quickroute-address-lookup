@@ -1,4 +1,4 @@
-import QuickRouteCacheMemory from "./cache.memory";
+import QuickRouteCacheMemory from "../cache.memory";
 
 describe("memory cache", () => {
   it("can instantiate the memory cache", async () => {

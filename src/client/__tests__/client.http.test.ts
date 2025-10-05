@@ -1,5 +1,6 @@
 import QuickRouteLoggerConsole from "../../logger/logger.console";
 import HttpClient from "../client.http";
+import { HttpResponseEvents } from "../client.http.const";
 
 describe("client.http.test", () => {
   it("can be instantiated with config options", () => {
@@ -27,7 +28,7 @@ describe("client.http.test", () => {
       });
       await http.get("notFound", {});
     } catch (error: any) {
-      expect(error.message).toBe("Request failed with status code 404");
+      expect(error.code).toBe(HttpResponseEvents.SERVER_ERROR);
     }
   });
 });

@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import QuickRouteLoggerI from "../logger/logger.interface";
 import { v4 as uuidv4 } from "uuid";
-import { HttpLogEvents } from "./client.http.const";
+import { HttpLogEvents, HttpResponseEvents } from "./client.http.const";
 import { sanitizeObject } from "./client.http.util.sanitise";
 
 export type HttpRequestOptions = {
@@ -99,7 +99,6 @@ class HttpClient {
         return Promise.reject(error);
       },
     );
-
     return client;
   }
 
@@ -108,9 +107,13 @@ class HttpClient {
     params: Record<string, any>,
     opts?: HttpRequestOptions,
   ): Promise<R> {
-    const client = this.createHttpClient({ logging: opts?.logging });
-    const response = await client.get(endpoint, { params, headers: opts?.headers });
-    return response.data as R;
+    try {
+      const client = this.createHttpClient({ logging: opts?.logging });
+      const response = await client.get(endpoint, { params, headers: opts?.headers });
+      return response.data as R;
+    } catch (error) {
+      throw { code: HttpResponseEvents.SERVER_ERROR, error };
+    }
   }
 
   protected logHttpRequest(event: HttpLogEvents, data: any): void {

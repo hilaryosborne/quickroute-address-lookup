@@ -30,6 +30,7 @@ module.exports = {
     "!src/**/*.d.ts",
     "!src/**/*.test.ts",
     "!src/__stubs__/**",
+    "!src/**/__stubs__/**",
     "!src/__mocks__/**",
     "!src/**/__tests__/**",
     "!src/index.ts",

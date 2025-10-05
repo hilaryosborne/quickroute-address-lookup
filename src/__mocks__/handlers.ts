@@ -9,6 +9,7 @@ export const handlers = [
   }),
 
   http.get("https://api.tomtom.com/search/2/search/:file", ({ params }) => {
+    if (params.file === "123 Error St.json") return new HttpResponse(null, { status: 500 });
     return HttpResponse.json({
       summary: {
         query: "47 dan street",

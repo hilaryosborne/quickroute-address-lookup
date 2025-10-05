@@ -1,0 +1,13 @@
+name: on deploy to latest
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'package version'
+        required: false
+        type: string
+
+jobs:
+  quality-checks:
+    uses: ./.github/workflows/common-quality-check.yml

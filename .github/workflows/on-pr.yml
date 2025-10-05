@@ -12,6 +12,8 @@ permissions:
   pull-requests: write
 
 jobs:
+  build-library:
+    uses: ./.github/workflows/common-build.yml
   quality-checks:
     uses: ./.github/workflows/common-quality-check.yml
   release-library:

@@ -13,11 +13,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
           registry-url: 'https://npm.pkg.github.com'
-      - run: npm ci
-      - run: npm run build
-      - run: npm test
+      - uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

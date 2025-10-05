@@ -1,0 +1,30 @@
+name: build
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/cache/save@v4
+        with:
+          path: |
+            node_modules
+            dist
+          key: build-${{ github.sha }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules

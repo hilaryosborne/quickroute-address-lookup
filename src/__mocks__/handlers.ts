@@ -1,6 +1,13 @@
 import { http, HttpResponse } from "msw";
 
 export const handlers = [
+  http.get("http://api.example.com/helloWorld", ({ params }) => {
+    return HttpResponse.json({ message: "Hello, World!" });
+  }),
+  http.get("http://api.example.com/notFound", ({ params }) => {
+    return new HttpResponse(null, { status: 404 });
+  }),
+
   http.get("https://api.tomtom.com/search/2/search/:file", ({ params }) => {
     return HttpResponse.json({
       summary: {

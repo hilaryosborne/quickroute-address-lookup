@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import QuickRouteLoggerI from "../logger/logger.interface";
 
 export type HttpRequestOptions = {

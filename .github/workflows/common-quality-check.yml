@@ -1,0 +1,24 @@
+name: conduct quality checks
+
+on:
+  workflow_call:
+
+jobs:
+  quality-checks:
+    name: pr quality checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: run prettier checks
+        run: npx prettier --check "src/**/*.{ts,js,json}"
+      - name: run jest tests
+        run: npm run test:coverage

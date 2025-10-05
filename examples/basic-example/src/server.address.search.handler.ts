@@ -3,7 +3,7 @@ import {
   QuickRouteCacheMemory,
   QuickRouteLoggerConsole,
   QuickRouteProviderTomTom,
-} from "@quickroute/address-lookup";
+} from "@hilaryosborne/quickroute-address-lookup";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { nanoid } from "nanoid";
 

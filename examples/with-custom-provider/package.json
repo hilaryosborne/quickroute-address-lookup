@@ -12,7 +12,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@quickroute/address-lookup": "file:../../",
+    "@hilaryosborne/quickroute-address-lookup": "file:../../",
     "dotenv": "^17.2.3",
     "fastify": "^5.6.1",
     "nanoid": "^5.1.6",

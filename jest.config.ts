@@ -22,6 +22,8 @@ module.exports = {
     "!src/__mocks__/**",
     "!src/**/__tests__/**",
     "!src/index.ts",
+    "!src/**/index.ts",
   ],
-  coverageReporters: ["text", "text-summary", "json"],
+  // @TODO enable coverage reports displayed on PR page
+  coverageReporters: ["text", "text-summary", "json", "json-summary"],
 };

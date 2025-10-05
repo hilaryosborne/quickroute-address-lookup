@@ -4,34 +4,24 @@ export const pathMatches = (pattern: string, actualPath: string): boolean => {
   return regex.test(actualPath);
 };
 
-const sanitizeObject = (obj: any, currentPath: string = ""): any => {
-  //   if (obj === null || obj === undefined) return obj;
-
-  //   // Check if current path should be redacted
-  //   for (const pattern of this.blacklistedPaths) {
-  //     if (pathMatches(pattern, currentPath)) {
-  //       return "[REDACTED]";
-  //     }
-  //   }
-
-  //   // Handle arrays
-  //   if (Array.isArray(obj)) {
-  //     return obj.map((item, index) => {
-  //       const newPath = currentPath ? `${currentPath}[${index}]` : `[${index}]`;
-  //       return sanitizeObject(item, newPath);
-  //     });
-  //   }
-
-  //   // Handle objects
-  //   if (typeof obj === "object") {
-  //     const sanitized: any = {};
-  //     for (const [key, value] of Object.entries(obj)) {
-  //       const newPath = currentPath ? `${currentPath}.${key}` : key;
-  //       sanitized[key] = sanitizeObject(value, newPath);
-  //     }
-  //     return sanitized;
-  //   }
-
-  // Primitive values
+export const sanitizeObject = (obj: any, currentPath: string = "", blacklisted: string[] = []): any => {
+  if (obj === null || obj === undefined) return obj;
+  for (const pattern of blacklisted) {
+    if (pathMatches(pattern, currentPath)) return "[REDACTED]";
+  }
+  if (Array.isArray(obj)) {
+    return obj.map((item, index) => {
+      const newPath = currentPath ? `${currentPath}[${index}]` : `[${index}]`;
+      return sanitizeObject(item, newPath);
+    });
+  }
+  if (typeof obj === "object") {
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const newPath = currentPath ? `${currentPath}.${key}` : key;
+      sanitized[key] = sanitizeObject(value, newPath, blacklisted);
+    }
+    return sanitized;
+  }
   return obj;
 };

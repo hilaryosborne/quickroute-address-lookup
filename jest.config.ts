@@ -24,7 +24,7 @@ module.exports = {
   // coverage configuration
   collectCoverage: false,
   coverageDirectory: ".coverage",
-  transformIgnorePatterns: ["node_modules/(?!(msw|@mswjs|@bundled-es-modules|until-async)/)"],
+  transformIgnorePatterns: ["node_modules/(?!(msw|@mswjs|@bundled-es-modules|until-async|uuid)/)"],
   collectCoverageFrom: [
     "src/**/*.{ts,tsx}",
     "!src/**/*.d.ts",

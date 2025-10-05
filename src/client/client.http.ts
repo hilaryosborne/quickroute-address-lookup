@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestCo
 import QuickRouteLoggerI from "../logger/logger.interface";
 import { v4 as uuidv4 } from "uuid";
 import { HttpLogEvents } from "./client.http.const";
+import { sanitizeObject } from "./client.http.util.sanitise";
 
 export type HttpRequestOptions = {
   headers?: { [key: string]: string };
@@ -29,7 +30,7 @@ class HttpClient {
   }
 
   protected sanitize(obj: any, blacklistedPaths: string[] = []): any {
-    return obj;
+    return sanitizeObject(obj, "", blacklistedPaths);
   }
 
   protected createHttpClient(opts: HttpRequestOptions): AxiosInstance {

@@ -72,7 +72,9 @@ class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRo
         "X-Correlation-Id": params.tracking?.correlation || "",
         "X-Conversation-Id": params.tracking?.conversation || "",
       },
-      logging: { blacklist: { request: ["params.key"], response: ["params.key"] } },
+      logging: {
+        blacklist: { request: ["params.key"], response: ["params.key"] },
+      },
     };
     const httpEndpoint = `search/2/search/${query}.json`;
     const http = new HttpClient({

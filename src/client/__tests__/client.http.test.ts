@@ -27,7 +27,7 @@ describe("client.http.test", () => {
       });
       await http.get("notFound", {});
     } catch (error: any) {
-      expect(error.message).toBe("HTTP error! status: 404");
+      expect(error.message).toBe("Request failed with status code 404");
     }
   });
 });

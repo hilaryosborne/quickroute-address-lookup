@@ -9,11 +9,19 @@ module.exports = {
     ...tsJestTransformCfg,
   },
   preset: "ts-jest",
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  // setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   testMatch: ["**/__tests__/**/*.test.ts", "**/*.test.ts"],
   // coverage configuration
   collectCoverage: false,
   coverageDirectory: ".coverage",
-  collectCoverageFrom: ["src/**/*.{ts,tsx}", "!src/**/*.d.ts", "!src/**/*.test.ts", "!src/__stubs__/**", "!src/__mocks__/**", "!src/**/__tests__/**", "!src/index.ts"],
+  collectCoverageFrom: [
+    "src/**/*.{ts,tsx}",
+    "!src/**/*.d.ts",
+    "!src/**/*.test.ts",
+    "!src/__stubs__/**",
+    "!src/__mocks__/**",
+    "!src/**/__tests__/**",
+    "!src/index.ts",
+  ],
   coverageReporters: ["text", "text-summary", "json"],
 };

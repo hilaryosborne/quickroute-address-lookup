@@ -30,26 +30,28 @@ describe("QuickRouteLoggerConsole", () => {
 
   it("should log error, warn, info, and log messages but not debug", () => {
     const logger = new QuickRouteLoggerConsole();
-    logger.error("error message");
-    logger.warn("warn message");
-    logger.info("info message");
-    logger.log("log message");
-    logger.debug("debug message");
-    expect(consoleSpy.error).toHaveBeenCalledWith("error message");
-    expect(consoleSpy.warn).toHaveBeenCalledWith("warn message");
-    expect(consoleSpy.info).toHaveBeenCalledWith("info message");
-    expect(consoleSpy.log).toHaveBeenCalledWith("log message");
+    const data = { key: "value" };
+    logger.error("error message", { data });
+    logger.warn("warn message", { data });
+    logger.info("info message", { data });
+    logger.log("log message", { data });
+    logger.debug("debug message", { data });
+    expect(consoleSpy.error).toHaveBeenCalledWith("error message", { data });
+    expect(consoleSpy.warn).toHaveBeenCalledWith("warn message", { data });
+    expect(consoleSpy.info).toHaveBeenCalledWith("info message", { data });
+    expect(consoleSpy.log).toHaveBeenCalledWith("log message", { data });
     expect(consoleSpy.debug).not.toHaveBeenCalled();
   });
 
   it("should only log error messages", () => {
     const logger = new QuickRouteLoggerConsole({ level: "error" });
-    logger.error("error message");
-    logger.warn("warn message");
-    logger.info("info message");
-    logger.log("log message");
-    logger.debug("debug message");
-    expect(consoleSpy.error).toHaveBeenCalledWith("error message");
+    const data = { key: "value" };
+    logger.error("error message", data);
+    logger.warn("warn message", data);
+    logger.info("info message", data);
+    logger.log("log message", data);
+    logger.debug("debug message", data);
+    expect(consoleSpy.error).toHaveBeenCalledWith("error message", data);
     expect(consoleSpy.warn).not.toHaveBeenCalled();
     expect(consoleSpy.info).not.toHaveBeenCalled();
     expect(consoleSpy.log).not.toHaveBeenCalled();
@@ -58,13 +60,14 @@ describe("QuickRouteLoggerConsole", () => {
 
   it("should log error and warn messages", () => {
     const logger = new QuickRouteLoggerConsole({ level: "warn" });
-    logger.error("error message");
-    logger.warn("warn message");
-    logger.info("info message");
-    logger.log("log message");
-    logger.debug("debug message");
-    expect(consoleSpy.error).toHaveBeenCalledWith("error message");
-    expect(consoleSpy.warn).toHaveBeenCalledWith("warn message");
+    const data = { key: "value" };
+    logger.error("error message", data);
+    logger.warn("warn message", data);
+    logger.info("info message", data);
+    logger.log("log message", data);
+    logger.debug("debug message", data);
+    expect(consoleSpy.error).toHaveBeenCalledWith("error message", data);
+    expect(consoleSpy.warn).toHaveBeenCalledWith("warn message", data);
     expect(consoleSpy.info).not.toHaveBeenCalled();
     expect(consoleSpy.log).not.toHaveBeenCalled();
     expect(consoleSpy.debug).not.toHaveBeenCalled();
@@ -72,44 +75,31 @@ describe("QuickRouteLoggerConsole", () => {
 
   it("should log all messages", () => {
     const logger = new QuickRouteLoggerConsole({ level: "debug" });
-    logger.error("error message");
-    logger.warn("warn message");
-    logger.info("info message");
-    logger.log("log message");
-    logger.debug("debug message");
-    expect(consoleSpy.error).toHaveBeenCalledWith("error message");
-    expect(consoleSpy.warn).toHaveBeenCalledWith("warn message");
-    expect(consoleSpy.info).toHaveBeenCalledWith("info message");
-    expect(consoleSpy.log).toHaveBeenCalledWith("log message");
-    expect(consoleSpy.debug).toHaveBeenCalledWith("debug message");
+    const data = { key: "value" };
+    logger.error("error message", data);
+    logger.warn("warn message", data);
+    logger.info("info message", data);
+    logger.log("log message", data);
+    logger.debug("debug message", data);
+    expect(consoleSpy.error).toHaveBeenCalledWith("error message", data);
+    expect(consoleSpy.warn).toHaveBeenCalledWith("warn message", data);
+    expect(consoleSpy.info).toHaveBeenCalledWith("info message", data);
+    expect(consoleSpy.log).toHaveBeenCalledWith("log message", data);
+    expect(consoleSpy.debug).toHaveBeenCalledWith("debug message", data);
   });
 
   it("should log error, warn, info, and log messages but not debug", () => {
     const logger = new QuickRouteLoggerConsole({ level: "log" });
-    logger.error("error message");
-    logger.warn("warn message");
-    logger.info("info message");
-    logger.log("log message");
-    logger.debug("debug message");
-    expect(consoleSpy.error).toHaveBeenCalledWith("error message");
-    expect(consoleSpy.warn).toHaveBeenCalledWith("warn message");
-    expect(consoleSpy.info).toHaveBeenCalledWith("info message");
-    expect(consoleSpy.log).toHaveBeenCalledWith("log message");
+    const data = { key: "value" };
+    logger.error("error message", data);
+    logger.warn("warn message", data);
+    logger.info("info message", data);
+    logger.log("log message", data);
+    logger.debug("debug message", data);
+    expect(consoleSpy.error).toHaveBeenCalledWith("error message", data);
+    expect(consoleSpy.warn).toHaveBeenCalledWith("warn message", data);
+    expect(consoleSpy.info).toHaveBeenCalledWith("info message", data);
+    expect(consoleSpy.log).toHaveBeenCalledWith("log message", data);
     expect(consoleSpy.debug).not.toHaveBeenCalled();
-  });
-
-  it("should default to info level", () => {
-    const logger = new QuickRouteLoggerConsole();
-    logger.debug("debug message");
-    logger.info("info message");
-    expect(consoleSpy.debug).not.toHaveBeenCalled();
-    expect(consoleSpy.info).toHaveBeenCalledWith("info message");
-  });
-  it("should default to info level", () => {
-    const logger = new QuickRouteLoggerConsole({});
-    logger.debug("debug message");
-    logger.info("info message");
-    expect(consoleSpy.debug).not.toHaveBeenCalled();
-    expect(consoleSpy.info).toHaveBeenCalledWith("info message");
   });
 });

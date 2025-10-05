@@ -22,27 +22,26 @@ class QuickRouteLoggerConsole implements QuickRouteLoggerI {
 
   log(message: string, data?: Record<string, any>): void {
     if (!this.shouldLog("log")) return;
-    console.log(message, data);
+    console.log(message, JSON.stringify(data || {}));
   }
 
   error(message: string, data?: Record<string, any>): void {
-    if (!this.shouldLog("error")) return;
-    console.error(message, data);
+    console.error(message, JSON.stringify(data || {}));
   }
 
   warn(message: string, data?: Record<string, any>): void {
     if (!this.shouldLog("warn")) return;
-    console.warn(message, data);
+    console.warn(message, JSON.stringify(data || {}));
   }
 
   info(message: string, data?: Record<string, any>): void {
     if (!this.shouldLog("info")) return;
-    console.info(message, data);
+    console.info(message, JSON.stringify(data || {}));
   }
 
   debug(message: string, data?: Record<string, any>): void {
     if (!this.shouldLog("debug")) return;
-    console.debug(message, data);
+    console.debug(message, JSON.stringify(data || {}));
   }
 }
 

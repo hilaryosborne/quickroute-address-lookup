@@ -51,10 +51,10 @@ class QuickRouteAddressLookup {
 
   public async searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationModelType[]> {
     try {
-      const results = await this.provider.searchByPartialAddress(params);
-      return results;
+      return await this.provider.searchByPartialAddress(params);
     } catch (error) {
       this.logger.error("Error searching by partial address");
+      console.log(error);
       return [];
     }
   }

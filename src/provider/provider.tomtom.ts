@@ -72,28 +72,8 @@ class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRo
         "X-Correlation-Id": params.tracking?.correlation || "",
         "X-Conversation-Id": params.tracking?.conversation || "",
       },
-      logger: {
-        // we need to remove the key from the request logs
-        onRequestLog: (req: {
-          endpoint: string;
-          params: ProviderTomTomFuzzySearchRequestType;
-          opts: Record<string, unknown>;
-        }): any => {
-          delete req.params.key;
-          delete req.opts.logger;
-          return req;
-        },
-        // and we need to remove the key from the response logs too
-        onResponseLog: (res: {
-          endpoint: string;
-          params: ProviderTomTomFuzzySearchRequestType;
-          opts: Record<string, unknown>;
-          response: QuickRouteProviderTomTomResponse;
-        }): any => {
-          delete res.params.key;
-          delete res.opts.logger;
-          return res;
-        },
+      logging: {
+        blacklist: { request: ["params.key"], response: ["params.key"] },
       },
     };
     const httpEndpoint = `search/2/search/${query}.json`;

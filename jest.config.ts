@@ -7,18 +7,30 @@ module.exports = {
   testEnvironment: "node",
   transform: {
     ...tsJestTransformCfg,
+    "^.+\\.tsx?$": "ts-jest",
+    "^.+\\.(js|mjs)$": [
+      "ts-jest",
+      {
+        tsconfig: {
+          allowJs: true,
+          checkJs: false,
+        },
+      },
+    ],
   },
   preset: "ts-jest",
-  // setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   testMatch: ["**/__tests__/**/*.test.ts", "**/*.test.ts"],
   // coverage configuration
   collectCoverage: false,
   coverageDirectory: ".coverage",
+  transformIgnorePatterns: ["node_modules/(?!(msw|@mswjs|@bundled-es-modules|until-async|uuid)/)"],
   collectCoverageFrom: [
     "src/**/*.{ts,tsx}",
     "!src/**/*.d.ts",
     "!src/**/*.test.ts",
     "!src/__stubs__/**",
+    "!src/**/__stubs__/**",
     "!src/__mocks__/**",
     "!src/**/__tests__/**",
     "!src/index.ts",

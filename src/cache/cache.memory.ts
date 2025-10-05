@@ -26,12 +26,12 @@ class QuickRouteCacheMemory extends QuickRouteCacheBase implements QuickRouteCac
 
   constructor(options?: QuickRouteCacheMemoryOptions) {
     super(options);
-    this.config = { maxSize: options?.maxSize || 1000, batchSize: 0.1 };
+    this.config = { maxSize: options?.maxSize || 1000, batchSize: options?.batchSize || 0.1 };
   }
 
   public async getByPartialAddress<L extends LocationModelType>(
     provider: string,
-    params: SearchByPartialAddressParams & { expands: string[] },
+    params: SearchByPartialAddressParams & { expands: ("address" | "geo" | "provider")[] },
   ): Promise<L[] | null> {
     const cache = QuickRouteCacheMemory.cache;
     const key = this.generatePartialAddressKey(provider, params);
@@ -44,7 +44,7 @@ class QuickRouteCacheMemory extends QuickRouteCacheBase implements QuickRouteCac
 
   public async setForPartialAddress<L extends LocationModelType>(
     provider: string,
-    params: SearchByPartialAddressParams & { expands: string[] },
+    params: SearchByPartialAddressParams & { expands: ("address" | "geo" | "provider")[] },
     results: L[],
   ): Promise<void> {
     const cache = QuickRouteCacheMemory.cache;
@@ -55,9 +55,9 @@ class QuickRouteCacheMemory extends QuickRouteCacheBase implements QuickRouteCac
 
   protected cleanCacheByBatch() {
     const cache = QuickRouteCacheMemory.cache;
-    const deleteCount = Math.floor(this.config.maxSize * this.config.batchSize);
+    const deleteCount = Math.ceil(this.config.maxSize * this.config.batchSize);
     const sortedByTimestamp = Array.from(cache.values()).sort((a, b) => a.timestamp - b.timestamp);
-    for (let i = 0; i < deleteCount && i < sortedByTimestamp.length; i++) {
+    for (let i = 0; i <= deleteCount && i < sortedByTimestamp.length; i++) {
       cache.delete(sortedByTimestamp[i].key);
     }
   }

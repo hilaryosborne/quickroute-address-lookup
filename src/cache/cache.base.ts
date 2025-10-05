@@ -15,6 +15,7 @@ class QuickRouteCacheBase {
   public setLogger(logger: QuickRouteLoggerI): void {
     this.logger = logger;
   }
+
   public hasLogger(): boolean {
     return !!this.logger;
   }

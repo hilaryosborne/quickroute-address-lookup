@@ -26,7 +26,6 @@ class QuickRouteLoggerConsole implements QuickRouteLoggerI {
   }
 
   error(message: string, data?: Record<string, any>): void {
-    if (!this.shouldLog("error")) return;
     console.error(message, data);
   }
 

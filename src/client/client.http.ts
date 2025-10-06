@@ -113,8 +113,40 @@ class HttpClient {
       const response = await client.get(endpoint, { params, headers: opts?.headers });
       return response.data as R;
     } catch (error: unknown) {
-      this.logger.error(HttpResponseEvents.SERVER_ERROR, error as Record<string, unknown>);
-      throw new ClientHttpError(HttpResponseEvents.SERVER_ERROR, error as AxiosError);
+      const axiosError = error as AxiosError;
+      const status = axiosError.response?.status;
+      let code: HttpResponseEvents;
+      if (status === 400) {
+        code = HttpResponseEvents.BAD_REQUEST;
+      } else if (status === 401) {
+        code = HttpResponseEvents.UNAUTHORIZED;
+      } else if (status === 404) {
+        code = HttpResponseEvents.NOT_FOUND;
+      } else if (status && status >= 500) {
+        code = HttpResponseEvents.SERVER_ERROR;
+      } else if (!status && axiosError.code) {
+        switch (axiosError.code) {
+          case "ERR_BAD_REQUEST":
+            code = HttpResponseEvents.BAD_REQUEST;
+            break;
+          case "ECONNREFUSED":
+            code = HttpResponseEvents.REFUSED;
+            break;
+          case "ENOTFOUND":
+            code = HttpResponseEvents.NOT_FOUND;
+            break;
+          case "ETIMEDOUT":
+            code = HttpResponseEvents.TIMEOUT;
+            break;
+          case "ERR_NETWORK":
+            code = HttpResponseEvents.SERVER_ERROR;
+            break;
+          default:
+            code = HttpResponseEvents.UNKNOWN;
+        }
+      } else code = HttpResponseEvents.UNKNOWN;
+      this.logger.error(code, axiosError as unknown as Record<string, unknown>);
+      throw new ClientHttpError(code, axiosError);
     }
   }
 

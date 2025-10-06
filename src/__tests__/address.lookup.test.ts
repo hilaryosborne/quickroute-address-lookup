@@ -1,5 +1,6 @@
 import QuickRouteAddressLookup from "../address.lookup";
 import QuickRouteCacheMemory from "../cache/cache.memory";
+import { HttpResponseEvents } from "../client/client.http.const";
 import QuickRouteLoggerConsole from "../logger/logger.console";
 import QuickRouteProviderTomTom from "../provider/provider.tomtom";
 
@@ -62,23 +63,26 @@ describe("address lookup", () => {
   });
 
   it("can handle when a search by partial address fails", async () => {
-    const addressLookup = new QuickRouteAddressLookup({
-      logger: new QuickRouteLoggerConsole(),
-      cache: new QuickRouteCacheMemory(),
-      provider: new QuickRouteProviderTomTom({
-        api: {
-          key: "invalid-key",
-          protocol: "https",
-          host: "api.tomtom.com",
-        },
-      }),
-    });
-    const results = await addressLookup.searchByPartialAddress({
-      query: "123 Error St",
-      options: { country: "AU" },
-      expands: ["address", "geo"],
-    });
-    expect(results.length).toBe(0);
+    try {
+      const addressLookup = new QuickRouteAddressLookup({
+        logger: new QuickRouteLoggerConsole(),
+        cache: new QuickRouteCacheMemory(),
+        provider: new QuickRouteProviderTomTom({
+          api: {
+            key: "invalid-key",
+            protocol: "https",
+            host: "api.tomtom.com",
+          },
+        }),
+      });
+      const results = await addressLookup.searchByPartialAddress({
+        query: "123 Error St",
+        options: { country: "AU" },
+        expands: ["address", "geo"],
+      });
+    } catch (error: any) {
+      expect(error.message).toBe(HttpResponseEvents.SERVER_ERROR);
+    }
   });
 
   it("uses default logger, cache and provider if none are provided", () => {

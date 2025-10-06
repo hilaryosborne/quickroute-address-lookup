@@ -28,7 +28,7 @@ describe("client.http.test", () => {
       });
       await http.get("notFound", {});
     } catch (error: any) {
-      expect(error.code).toBe(HttpResponseEvents.SERVER_ERROR);
+      expect(error.message).toBe(HttpResponseEvents.NOT_FOUND);
     }
   });
 });

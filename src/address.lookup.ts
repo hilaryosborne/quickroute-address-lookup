@@ -1,5 +1,6 @@
 import QuickRouteCacheI from "./cache/cache.interface";
 import QuickRouteCacheMemory from "./cache/cache.memory";
+import AddressLookupError from "./error/address.lookup.error";
 import QuickRouteLoggerConsole from "./logger/logger.console";
 import QuickRouteLoggerI from "./logger/logger.interface";
 import { LocationModelType } from "./models/location.model";
@@ -52,10 +53,8 @@ class QuickRouteAddressLookup {
   public async searchByPartialAddress(params: SearchByPartialAddressParams): Promise<LocationModelType[]> {
     try {
       return await this.provider.searchByPartialAddress(params);
-    } catch (error) {
-      this.logger.error("Error searching by partial address");
-      console.log(error);
-      return [];
+    } catch (error: unknown) {
+      throw new AddressLookupError((error as Error).message);
     }
   }
 }

@@ -3,6 +3,7 @@ import QuickRouteLoggerI from "../logger/logger.interface";
 import { v4 as uuidv4 } from "uuid";
 import { HttpLogEvents, HttpResponseEvents } from "./client.http.const";
 import { sanitizeObject } from "./client.http.util.sanitise";
+import ClientHttpError from "./client.http.error";
 
 export type HttpRequestOptions = {
   headers?: { [key: string]: string };
@@ -95,7 +96,7 @@ class HttpClient {
           },
           opts?.logging?.blacklist?.error || [],
         );
-        this.logger.log(HttpLogEvents.RESPONMSE_ERROR, data);
+        this.logger.log(HttpLogEvents.RESPONSE_ERROR, data);
         return Promise.reject(error);
       },
     );
@@ -111,8 +112,9 @@ class HttpClient {
       const client = this.createHttpClient({ logging: opts?.logging });
       const response = await client.get(endpoint, { params, headers: opts?.headers });
       return response.data as R;
-    } catch (error) {
-      throw { code: HttpResponseEvents.SERVER_ERROR, error };
+    } catch (error: unknown) {
+      this.logger.error(HttpResponseEvents.SERVER_ERROR, error as Record<string, unknown>);
+      throw new ClientHttpError(HttpResponseEvents.SERVER_ERROR, error as AxiosError);
     }
   }
 

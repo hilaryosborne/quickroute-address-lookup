@@ -1,5 +1,7 @@
 import QuickRouteAddressLookup from "../address.lookup";
 import QuickRouteCacheMemory from "../cache/cache.memory";
+import { HttpErrorResponseCode } from "../client";
+import BaseError from "../error/base.error";
 // import { HttpResponseEvents } from "../client/client.http.const";
 import QuickRouteLoggerConsole from "../logger/logger.console";
 import QuickRouteProviderTomTom from "../provider/provider.tomtom";
@@ -62,28 +64,27 @@ describe("address lookup", () => {
     expect(Array.isArray(results)).toBe(true);
   });
 
-  // it("can handle when a search by partial address fails", async () => {
-  //   try {
-  //     const addressLookup = new QuickRouteAddressLookup({
-  //       logger: new QuickRouteLoggerConsole(),
-  //       cache: new QuickRouteCacheMemory(),
-  //       provider: new QuickRouteProviderTomTom({
-  //         api: {
-  //           key: "invalid-key",
-  //           protocol: "https",
-  //           host: "api.tomtom.com",
-  //         },
-  //       }),
-  //     });
-  //     const results = await addressLookup.searchByPartialAddress({
-  //       query: "123 Error St",
-  //       options: { country: "AU" },
-  //       expands: ["address", "geo"],
-  //     });
-  //   } catch (error: any) {
-  //     expect(error.message).toBe(HttpResponseEvents.SERVER_ERROR);
-  //   }
-  // });
+  it("can handle when a search by partial address fails", async () => {
+    try {
+      const addressLookup = new QuickRouteAddressLookup({
+        logger: new QuickRouteLoggerConsole(),
+        cache: new QuickRouteCacheMemory(),
+        provider: new QuickRouteProviderTomTom({
+          api: { key: "invalid-key", protocol: "https", host: "api.tomtom.com" },
+        }),
+      });
+      await addressLookup.searchByPartialAddress({
+        query: "123 Error St",
+        options: { country: "AU" },
+        expands: ["address", "geo"],
+      });
+      throw new Error("Expected search to fail but it succeeded");
+    } catch (error) {
+      if (error instanceof BaseError) {
+        expect(error.code).toBe(HttpErrorResponseCode.SERVER_ERROR);
+      } else throw error;
+    }
+  });
 
   it("uses default logger, cache and provider if none are provided", () => {
     process.env.PROVIDER_TOMTOM_API_KEY = "example-key";

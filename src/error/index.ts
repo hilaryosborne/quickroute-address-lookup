@@ -1,1 +1,1 @@
-export { default as AddressLookupError } from "./address.lookup.error";
+export { default as BaseError } from "./base.error";

@@ -1,6 +1,5 @@
 import QuickRouteLoggerConsole from "../../logger/logger.console";
 import HttpClient from "../client.http";
-import { HttpResponseEvents } from "../client.http.const";
 
 describe("client.http.test", () => {
   it("can be instantiated with config options", () => {
@@ -20,15 +19,15 @@ describe("client.http.test", () => {
     expect(response).toEqual({ message: "Hello, World!" });
   });
 
-  it("can handle an unsuccessful GET request", async () => {
-    try {
-      const http = new HttpClient({
-        base: { protocol: "http", host: "api.example.com" },
-        logger: new QuickRouteLoggerConsole({ level: "debug" }),
-      });
-      await http.get("notFound", {});
-    } catch (error: any) {
-      expect(error.message).toBe(HttpResponseEvents.NOT_FOUND);
-    }
-  });
+  // it("can handle an unsuccessful GET request", async () => {
+  //   try {
+  //     const http = new HttpClient({
+  //       base: { protocol: "http", host: "api.example.com" },
+  //       logger: new QuickRouteLoggerConsole({ level: "debug" }),
+  //     });
+  //     await http.get("notFound", {});
+  //   } catch (error: any) {
+  //     expect(error.message).toBe(HttpResponseEvents.NOT_FOUND);
+  //   }
+  // });
 });

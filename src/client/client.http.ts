@@ -1,9 +1,9 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import QuickRouteLoggerI from "../logger/logger.interface";
 import { v4 as uuidv4 } from "uuid";
-import { HttpLogEvents, HttpResponseEvents } from "./client.http.const";
+import { HttpLogEvents } from "./client.http.const";
 import { sanitizeObject } from "./client.http.util.sanitise";
-import ClientHttpError from "./client.http.error";
+import { getAxiosResponseErrorCode, HttpClientError, HttpErrorResponseCode } from "./client.http.error";
 
 export type HttpRequestOptions = {
   headers?: { [key: string]: string };
@@ -59,11 +59,16 @@ class HttpClient {
         return config;
       },
       (error: AxiosError) => {
-        console.error(HttpLogEvents.REQUEST_ERROR, {
-          timestamp: new Date().toISOString(),
-          message: error.message,
-        });
-        return Promise.reject(error);
+        const code = HttpLogEvents.REQUEST_ERROR;
+        const context = this.sanitize(
+          {
+            timestamp: new Date().toISOString(),
+            message: error.message,
+            stack: error.stack,
+          },
+          opts?.logging?.blacklist?.error || [],
+        );
+        return Promise.reject(new HttpClientError(code, context, error));
       },
     );
 
@@ -84,7 +89,8 @@ class HttpClient {
         return response;
       },
       (error: AxiosError) => {
-        const data = this.sanitize(
+        const code: HttpErrorResponseCode = getAxiosResponseErrorCode(error);
+        const context = this.sanitize(
           {
             timestamp: new Date().toISOString(),
             status: error.response?.status,
@@ -96,8 +102,7 @@ class HttpClient {
           },
           opts?.logging?.blacklist?.error || [],
         );
-        this.logger.log(HttpLogEvents.RESPONSE_ERROR, data);
-        return Promise.reject(error);
+        return Promise.reject(new HttpClientError(code, context, error));
       },
     );
     return client;
@@ -108,50 +113,9 @@ class HttpClient {
     params: Record<string, any>,
     opts?: HttpRequestOptions,
   ): Promise<R> {
-    try {
-      const client = this.createHttpClient({ logging: opts?.logging });
-      const response = await client.get(endpoint, { params, headers: opts?.headers });
-      return response.data as R;
-    } catch (error: unknown) {
-      const axiosError = error as AxiosError;
-      const status = axiosError.response?.status;
-      let code: HttpResponseEvents;
-      if (status === 400) {
-        code = HttpResponseEvents.BAD_REQUEST;
-      } else if (status === 401) {
-        code = HttpResponseEvents.UNAUTHORIZED;
-      } else if (status === 404) {
-        code = HttpResponseEvents.NOT_FOUND;
-      } else if (status && status >= 500) {
-        code = HttpResponseEvents.SERVER_ERROR;
-      } else if (!status && axiosError.code) {
-        switch (axiosError.code) {
-          case "ERR_BAD_REQUEST":
-            code = HttpResponseEvents.BAD_REQUEST;
-            break;
-          case "ECONNREFUSED":
-            code = HttpResponseEvents.REFUSED;
-            break;
-          case "ENOTFOUND":
-            code = HttpResponseEvents.NOT_FOUND;
-            break;
-          case "ETIMEDOUT":
-            code = HttpResponseEvents.TIMEOUT;
-            break;
-          case "ERR_NETWORK":
-            code = HttpResponseEvents.SERVER_ERROR;
-            break;
-          default:
-            code = HttpResponseEvents.UNKNOWN;
-        }
-      } else code = HttpResponseEvents.UNKNOWN;
-      this.logger.error(code, axiosError as unknown as Record<string, unknown>);
-      throw new ClientHttpError(code, axiosError);
-    }
-  }
-
-  protected logHttpRequest(event: HttpLogEvents, data: any): void {
-    this.logger.info(event, data);
+    const client = this.createHttpClient({ logging: opts?.logging });
+    const response = await client.get<R>(endpoint, { params, headers: opts?.headers });
+    return response.data;
   }
 }
 

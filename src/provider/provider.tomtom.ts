@@ -7,20 +7,16 @@ import HttpClient from "../client/client.http";
 import QuickRouteLoggerI from "../logger/logger.interface";
 import { QuickRouteCacheI } from "../cache";
 import QuickRouteProviderBase, { QuickRouteProviderBaseParams } from "./provider.base";
-import {
-  ProviderTomTomFuzzySearchParams,
-  ProviderTomTomFuzzySearchRequest,
-  ProviderTomTomFuzzySearchRequestType,
-} from "./provider.tomtom.request.type";
+import { ProviderTomTomFuzzySearchParams, ProviderTomTomFuzzySearchRequest } from "./provider.tomtom.request.type";
 
-type QuickRouteProviderTomTomApi = {
+export type QuickRouteProviderTomTomApi = {
   key: string;
   protocol: string;
   host: string;
   port?: number;
 };
 
-type QuickRouteProviderTomTomParams = QuickRouteProviderBaseParams &
+export type QuickRouteProviderTomTomParams = QuickRouteProviderBaseParams &
   Partial<{ api: Partial<QuickRouteProviderTomTomApi> }>;
 class QuickRouteProviderTomTom extends QuickRouteProviderBase implements QuickRouteProviderI {
   // tomtom api configuration (api key, host, protocol, port)

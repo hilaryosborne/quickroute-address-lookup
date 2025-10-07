@@ -30,7 +30,7 @@ class HttpClient {
     this.base = params.base;
   }
 
-  protected sanitize(obj: any, blacklistedPaths: string[] = []): any {
+  protected sanitize(obj: Record<string, unknown>, blacklistedPaths: string[] = []): Record<string, unknown> {
     return sanitizeObject(obj, "", blacklistedPaths);
   }
 
@@ -40,37 +40,23 @@ class HttpClient {
     else url = new URL(`${this.base.protocol}://${this.base.host}`);
     const client = axios.create({ baseURL: url.toString(), timeout: 10000 });
     // Request interceptor
-    client.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        config.headers["X-Request-ID"] = uuidv4();
-        config.headers["Content-Type"] = "application/json";
-        const data = this.sanitize(
-          {
-            timestamp: new Date().toISOString(),
-            method: config.method?.toUpperCase(),
-            url: config.url,
-            params: config.params,
-            headers: config.headers,
-            data: config.data,
-          },
-          opts?.logging?.blacklist?.request || [],
-        );
-        this.logger.log(HttpLogEvents.REQUEST, data);
-        return config;
-      },
-      (error: AxiosError) => {
-        const code = HttpLogEvents.REQUEST_ERROR;
-        const context = this.sanitize(
-          {
-            timestamp: new Date().toISOString(),
-            message: error.message,
-            stack: error.stack,
-          },
-          opts?.logging?.blacklist?.error || [],
-        );
-        return Promise.reject(new HttpClientError(code, context, error));
-      },
-    );
+    client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+      config.headers["X-Request-ID"] = uuidv4();
+      config.headers["Content-Type"] = "application/json";
+      const data = this.sanitize(
+        {
+          timestamp: new Date().toISOString(),
+          method: config.method?.toUpperCase(),
+          url: config.url,
+          params: config.params,
+          headers: config.headers,
+          data: config.data,
+        },
+        opts?.logging?.blacklist?.request || [],
+      );
+      this.logger.log(HttpLogEvents.REQUEST, data);
+      return config;
+    });
 
     client.interceptors.response.use(
       (response: AxiosResponse) => {

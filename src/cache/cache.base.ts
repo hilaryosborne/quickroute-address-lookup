@@ -24,7 +24,9 @@ class QuickRouteCacheBase {
     provider: string,
     params: SearchByPartialAddressParams & { expands: string[] },
   ): string {
-    return [provider, params.query, JSON.stringify(params.options), params.expands.join(":")].filter(Boolean).join(":");
+    return [provider, params.query, JSON.stringify(params.options), params.expands?.join(":")]
+      .filter(Boolean)
+      .join(":");
   }
 }
 

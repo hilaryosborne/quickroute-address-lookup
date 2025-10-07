@@ -1,4 +1,5 @@
 import {
+  BaseError,
   QuickRouteAddressLookup,
   QuickRouteCacheMemory,
   QuickRouteLoggerConsole,
@@ -47,9 +48,10 @@ const ServerAddressSearchHandler = async (request: FastifyRequest, reply: Fastif
     });
 
     reply.send({ results });
-  } catch (error: unknown) {
-    console.error(error);
-    reply.status(500).send({ error: (error as Error).message });
+  } catch (error) {
+    if (error instanceof BaseError) {
+      reply.status(500).send({ error: error.code, data: error.data });
+    } else reply.status(500).send({ error: true });
   }
 };
 

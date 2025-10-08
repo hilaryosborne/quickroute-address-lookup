@@ -23,6 +23,28 @@ export enum HttpErrorResponseCode {
   UNKNOWN = "HTTP_RESPONSE_UNKNOWN",
 }
 
+export const HttpClientErrorMessage: Record<HttpErrorResponseCode, string> = {
+  [HttpErrorResponseCode.NO_CONTENT]: "No Content",
+  [HttpErrorResponseCode.BAD_REQUEST]: "Bad Request",
+  [HttpErrorResponseCode.UNAUTHORIZED]: "Unauthorized",
+  [HttpErrorResponseCode.FORBIDDEN]: "Forbidden",
+  [HttpErrorResponseCode.NOT_FOUND]: "Not Found",
+  [HttpErrorResponseCode.CONFLICT]: "Conflict",
+  [HttpErrorResponseCode.UNPROCESSABLE_ENTITY]: "Unprocessable Entity",
+  [HttpErrorResponseCode.TOO_MANY_REQUESTS]: "Too Many Requests",
+  [HttpErrorResponseCode.SERVER_ERROR]: "Internal Server Error",
+  [HttpErrorResponseCode.BAD_GATEWAY]: "Bad Gateway",
+  [HttpErrorResponseCode.SERVICE_UNAVAILABLE]: "Service Unavailable",
+  [HttpErrorResponseCode.GATEWAY_TIMEOUT]: "Gateway Timeout",
+  [HttpErrorResponseCode.REFUSED]: "Connection Refused",
+  [HttpErrorResponseCode.TIMEOUT]: "Connection Timed Out",
+  [HttpErrorResponseCode.NETWORK_ERROR]: "Network Error",
+  [HttpErrorResponseCode.DNS_ERROR]: "DNS Resolution Error",
+  [HttpErrorResponseCode.ABORTED]: "Request Aborted",
+  [HttpErrorResponseCode.SSL_ERROR]: "SSL Error",
+  [HttpErrorResponseCode.UNKNOWN]: "Unknown Error",
+};
+
 export const AxiosErrorCodeToHttpErrorResponseCode: Record<string, HttpErrorResponseCode> = {
   ERR_BAD_REQUEST: HttpErrorResponseCode.BAD_REQUEST,
   ECONNREFUSED: HttpErrorResponseCode.REFUSED,
@@ -81,10 +103,10 @@ export const getAxiosResponseErrorCode = (error: AxiosError): HttpErrorResponseC
 
 export class HttpClientError extends BaseError {
   constructor(
-    public code: string,
-    public data: Record<string, unknown>,
+    public code: HttpErrorResponseCode,
+    public context: Record<string, unknown>,
     public original: AxiosError,
   ) {
-    super(code, data, original);
+    super(code, HttpClientErrorMessage[code], context, original);
   }
 }

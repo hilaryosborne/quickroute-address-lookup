@@ -46,8 +46,8 @@ describe("client.http.test", () => {
     } catch (error: unknown) {
       if (error instanceof BaseError) {
         expect(error.code).toBe(HttpErrorResponseCode.NOT_FOUND);
-        expect(error.data).toBeDefined();
-        expect(error.original).toBeDefined();
+        expect(error.context).toBeDefined();
+        expect(error.originalError).toBeDefined();
       } else throw error;
     }
   });
@@ -62,8 +62,8 @@ describe("client.http.test", () => {
     } catch (error: unknown) {
       if (error instanceof BaseError) {
         expect(error.code).toBe(HttpErrorResponseCode.SERVER_ERROR);
-        expect(error.data).toBeDefined();
-        expect(error.original).toBeDefined();
+        expect(error.context).toBeDefined();
+        expect(error.originalError).toBeDefined();
       } else throw error;
     }
   });

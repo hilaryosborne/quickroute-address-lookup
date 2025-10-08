@@ -3,9 +3,9 @@ import { getAxiosResponseErrorCode, HttpClientError, HttpErrorResponseCode } fro
 describe("http client errors", () => {
   it("return an error object with a code, data and original error instance", () => {
     const error = new Error("Test error");
-    const httpError = new HttpClientError("TEST_CODE", { info: "test" }, error as any);
-    expect(httpError.code).toBe("TEST_CODE");
-    expect(httpError.data).toEqual({ info: "test" });
+    const httpError = new HttpClientError(HttpErrorResponseCode.NOT_FOUND, { info: "test" }, error as any);
+    expect(httpError.code).toBe(HttpErrorResponseCode.NOT_FOUND);
+    expect(httpError.context).toEqual({ info: "test" });
     expect(httpError.original).toBe(error);
   });
 

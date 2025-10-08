@@ -55,7 +55,7 @@ class QuickRouteAddressLookup {
       return await this.provider.searchByPartialAddress(params);
     } catch (error) {
       if (error instanceof BaseError) throw error;
-      else throw new BaseError("GENERIC_ERROR", { params }, error);
+      else throw new BaseError("GENERIC_ERROR", "Generic Error", { params }, error);
     }
   }
 }

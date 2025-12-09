@@ -14,7 +14,7 @@
   "dependencies": {
     "@hilaryosborne/quickroute-address-lookup": "file:../../",
     "dotenv": "^17.2.3",
-    "fastify": "^5.6.1",
+    "fastify": "^5.6.2",
     "nanoid": "^5.1.6",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0"
